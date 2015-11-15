@@ -18,14 +18,14 @@ namespace Lua {
         byte max_stack_size;
 
         InstructionList* code;
+        Container<ValueObject> constants;
 
-        // constants
         // upvalues
         // protos
 
     public:
         Function(String* func_name, int line_defined_first, int line_defined_last, byte num_params, byte is_vararg,
-                 byte max_stack_size, InstructionList *code);
+                 byte max_stack_size, InstructionList *code, Container<ValueObject> constants);
         ~Function();
 
         void print();

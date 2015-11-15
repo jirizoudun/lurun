@@ -5,6 +5,8 @@
 #ifndef LURUN_LUA_H
 #define LURUN_LUA_H
 
+#include "container.h"
+#include "value.h"
 #include "string.h"
 #include "instruction.h"
 #include "instruction_list.h"

@@ -25,7 +25,8 @@ typedef unsigned char uchar;
 typedef unsigned char byte;
 
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include "lua/lua.h"
 #include "header.h"

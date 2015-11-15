@@ -9,6 +9,22 @@ set(SOURCE_FILES
         src/main.cpp
         .gitignore
         LICENSE
-        README.md src/reader.cpp src/reader.h src/common.h src/lua/function.cpp src/lua/function.h src/lua/instruction.cpp src/lua/instruction.h src/lua/string.cpp src/lua/string.h src/lua/lua.h src/lua/instruction_list.cpp src/lua/instruction_list.h)
+        README.md
+        src/reader.cpp
+        src/reader.h
+        src/common.h
+        src/lua/function.cpp
+        src/lua/function.h
+        src/lua/instruction.cpp
+        src/lua/instruction.h
+        src/lua/string.cpp
+        src/lua/string.h
+        src/lua/lua.h
+        src/lua/instruction_list.cpp
+        src/lua/instruction_list.h
+        src/lua/value.cpp
+        src/lua/value.h
+        src/lua/container.cpp
+        src/lua/container.h)
 
 add_executable(lurun ${SOURCE_FILES})

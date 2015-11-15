@@ -22,14 +22,14 @@ private:
     byte                readByte();
     int                 readInt();
 
-    void readBool();
-    void readNum();
+    bool                readBool();
+    double              readNum();
 
     Lua::String*        readString();
     Lua::InstructionList* readCode();
 
     Lua::Function*      readFunction();
-    void readConstants();
+    Lua::Container<Lua::ValueObject> readConstants();
     void readUpvalues();
     void readProtos();
     void readDebug();

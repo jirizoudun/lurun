@@ -25,28 +25,34 @@ void Reader::readFile() {
 
 Function* Reader::readFunction() {
 
-    String* name = readString(); // source name?
-    int line_first = readInt(); // line defined
-    int line_last = readInt(); // lastlinedefined
-    byte num_params = readByte(); // numparams
-    byte is_vararg = readByte(); // is_vararg
-    byte max_stack_size = readByte(); // maxstacksize
-    InstructionList* code = readCode(); // code
+    String*                 name        = readString(); // source name?
+    int                     line_first  = readInt(); // line defined
+    int                     line_last   = readInt(); // lastlinedefined
+    byte                    num_params  = readByte(); // numparams
+    byte                    is_vararg   = readByte(); // is_vararg
+    byte                    max_stack   = readByte(); // maxstacksize
+    InstructionList*        code        = readCode(); // code
+    Container<ValueObject>  constants   = readConstants(); // constants
 
     /*
-    readConstants();
     readUpvalues();
     readProtos();
     readDebug();
      */
 
-    return new Function(name, line_first, line_last, num_params, is_vararg, max_stack_size, code);
+    return new Function(name, line_first, line_last, num_params, is_vararg, max_stack, code, constants);
 }
 
 byte Reader::readByte() {
     return Reader::getNext();
 }
-
+bool Reader::readBool() {
+    return getNext();
+}
+double Reader::readNum() {
+    // TODO implement
+    return 0.;
+}
 int Reader::readInt() {
     int number;
     number = 0;
@@ -80,45 +86,33 @@ InstructionList* Reader::readCode() {
     return new InstructionList(count, inst);
 }
 
+Container<ValueObject> Reader::readConstants() {
 
+    Container<ValueObject> values(readInt());
 
-
-
-void Reader::readBool() {
-    // TODO implement
-}
-void Reader::readNum() {
-    // TODO implement
-}
-
-
-void Reader::readConstants() {
-    int count = readInt();
-    for (int i=0; i<count; i++) {
-        byte type = readByte();
-
-        switch(type) {
-            case 0: // LUA_TNIL
-                // TODO return nil
+    for (int i=0; i<values.count; i++) {
+        values[i].type = readByte();
+        switch(values[i].type) {
+            case LUA_TNIL:
                 break;
-            case 1: // LUA_TBOOLEAN
-                readBool();
+            case LUA_TBOOLEAN:
+                values[i].value.b = readBool();
                 break;
-            case 3: // LUA_TNUMFLT
-                readNum();
+            case LUA_TNUMFLT:
+                values[i].value.d = readNum();
                 break;
-            case 19: // LUA_TNUMINT
-                readInt();
+            case LUA_TNUMINT:
+                values[i].value.i = readInt();
                 break;
-            case 4:  // LUA_TSHRSTR
-            case 20: // LUA_TLNGSTR
-                readString();
+            case LUA_TSHRSTR:
+            case LUA_TLNGSTR:
+                values[i].value.p = (void*)readString();
                 break;
             default:
-                // TODO error
-                break;
+                exit(0); // TODO error
         }
     }
+    return values;
 }
 void Reader::readUpvalues() {
     int count = readInt();
