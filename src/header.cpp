@@ -2,12 +2,10 @@
 // Created by Jiří Zoudun on 15/11/15.
 //
 
+#include "common.h"
 #include "header.h"
 
 #include <stdio.h>
-
-typedef unsigned char uchar;
-
 
 //!Valid header fields definitions.
 uchar VALID_SIGNATURE[SIGNATURE_SIZE] = {(uchar)0x1b, (uchar)0x4c, (uchar)0x75, (uchar)0x61};

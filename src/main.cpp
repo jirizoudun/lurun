@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common.h"
 #include "header.h"
+#include "reader.h"
 
 #define TEST_FILE "../../luac.out"
 
@@ -13,8 +15,6 @@
 #define ERROR_HEADER_FORMAT "Invalid format of header!\nPlease, provide file eith valid header.\n"
 #define ERROR_AT_BYTE "Error at byte [%d]\n"
 
-#define MAX_FILENAME_LENGTH 128
-#define BUFFER_SIZE 1048576 //MB
 
 /**
  * Prints binary representation of char.
@@ -26,15 +26,6 @@ void printbinchar(unsigned char character)
         putchar( (character & (1 << i)) ? '1' : '0' );
     }
 }
-
-/**
- * Compiled lua file info with buffer for file content.
- */
-struct LFILE{
-    char filename[MAX_FILENAME_LENGTH + 1];
-    unsigned char buffer[BUFFER_SIZE];
-    unsigned int buffer_size;
-};
 
 /**
  * Loading of file to buffer in @c LFILE.
@@ -202,7 +193,11 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    printf("OK!");
+    printf("OK!\n");
+
+    // decode file
+    Reader* reader = new Reader(lfile);
+    reader->readFile();
 
     return 0;
 }

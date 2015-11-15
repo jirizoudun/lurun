@@ -18,6 +18,7 @@
 #define LUACNUM_SIZE 8
 #define SIZEUPVALUE_SIZE 1
 
+#define HEADER_SIZE 34
 
 /**
  * Function that checks validity of header field TODO.
