@@ -28,6 +28,8 @@ namespace Lua {
                  byte max_stack_size, InstructionList *code);
         ~Function();
 
+        void print();
+
     };
 
 }

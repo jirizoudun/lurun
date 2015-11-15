@@ -11,6 +11,7 @@ namespace Lua {
 
     public:
         Instruction(int inst);
+        void print();
     };
 }
 

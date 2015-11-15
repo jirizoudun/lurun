@@ -20,7 +20,7 @@ void Reader::readFile() {
     #endif
 
     skip(HEADER_SIZE);
-    readFunction();
+    (readFunction())->print();
 }
 
 Function* Reader::readFunction() {

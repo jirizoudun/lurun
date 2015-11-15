@@ -22,4 +22,12 @@ namespace Lua {
         delete func_name;
         delete code;
     }
+
+    void Function::print() {
+        printf("--- Function --------\n");
+        printf("Name: "); func_name->print();
+        printf("Lines: %i..%i\n", line_defined_first, line_defined_last);
+        printf("Params: %i, vararg: %i, max stack: %i\n", num_params, is_vararg, max_stack_size);
+        code->print();
+    }
 }

@@ -14,4 +14,8 @@ namespace Lua {
     String::~String() {
         delete [] str;
     }
+
+    void String::print() {
+        printf("%s\n", str);
+    }
 }

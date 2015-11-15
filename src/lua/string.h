@@ -15,6 +15,7 @@ namespace Lua {
     public:
         String(size_t length, char* str);
         ~String();
+        void print();
     };
 }
 

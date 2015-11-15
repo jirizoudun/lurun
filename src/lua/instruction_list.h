@@ -13,9 +13,10 @@ namespace Lua {
         Instruction** list;
 
     public:
-
         InstructionList(int count, Instruction** list);
         ~InstructionList();
+
+        void print();
     };
 
 }

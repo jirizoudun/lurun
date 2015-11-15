@@ -17,4 +17,12 @@ namespace Lua {
         }
         delete [] list;
     }
+
+    void InstructionList::print() {
+        printf("Instructions:\n");
+        for(int i=0; i<count; i++) {
+            printf("\t");
+            list[i]->print();
+        }
+    }
 }
