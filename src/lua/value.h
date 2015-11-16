@@ -17,10 +17,10 @@ namespace Lua {
     // inspired by http://www.lua.org/doc/jucs05.pdf, page 5
     union Value {
     public:
-        void*  p;
-        int    i;
-        double d;
-        bool   b;
+        void*       p;
+        long long   i;
+        double      d;
+        bool        b;
     };
 
     class ValueObject {

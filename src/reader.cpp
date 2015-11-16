@@ -9,6 +9,10 @@ using namespace Lua;
 void Reader::skip(unsigned bytes) {
     cursor += bytes;
 }
+void Reader::copy(void* dest, size_t count) {
+    memcpy(dest, lfile.buffer+cursor, count);
+    cursor += count;
+}
 
 byte Reader::getNext() {
     return lfile.buffer[cursor++];
@@ -49,18 +53,22 @@ byte Reader::readByte() {
 bool Reader::readBool() {
     return getNext();
 }
-double Reader::readNum() {
-    // TODO implement
-    return 0.;
-}
 int Reader::readInt() {
     int number;
-    number = 0;
-    for (int i=0; i<4; i++) { // TODO replace 4 with constant
-        number |= (getNext() << (i*8)); // TODO better?
-    }
+    copy((void*)&number, sizeof(number));
     return number;
 }
+double Reader::readNumber() {
+    double number;
+    copy((void*)&number, sizeof(number)); // TODO shouldn't count on double being 8 bytes
+    return number;
+}
+long long Reader::readInteger() {
+    long long number;
+    copy((void*)&number, sizeof(number)); // TODO shouldn't count on long long being 8 bytes
+    return number;
+}
+
 String* Reader::readString() {
     uchar byte = getNext();
     if (byte == 0) {
@@ -101,17 +109,17 @@ Container<ValueObject>* Reader::readConstants() {
                 values[i].value.b = readBool();
                 break;
             case LUA_TNUMFLT:
-                values[i].value.d = readNum();
+                values[i].value.d = readNumber();
                 break;
             case LUA_TNUMINT:
-                values[i].value.i = readInt();
+                values[i].value.i = readInteger();
                 break;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
                 values[i].value.p = (void*)readString();
                 break;
             default:
-                exit(0); // TODO error
+                exit(1); // TODO error
         }
     }
     return cont;

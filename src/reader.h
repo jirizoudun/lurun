@@ -18,12 +18,14 @@ private:
 
     byte                getNext();
     void                skip(unsigned bytes);
+    void                copy(void* dst, size_t count);
 
     byte                readByte();
     int                 readInt();
 
     bool                readBool();
-    double              readNum();
+    double              readNumber();
+    long long           readInteger();
 
     Lua::String*        readString();
     Lua::InstructionList* readCode();
