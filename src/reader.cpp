@@ -32,7 +32,7 @@ Function* Reader::readFunction() {
     byte                    is_vararg   = readByte(); // is_vararg
     byte                    max_stack   = readByte(); // maxstacksize
     InstructionList*        code        = readCode(); // code
-    Container<ValueObject>  constants   = readConstants(); // constants
+    Container<ValueObject>* constants   = readConstants(); // constants
 
     /*
     readUpvalues();
@@ -86,11 +86,13 @@ InstructionList* Reader::readCode() {
     return new InstructionList(count, inst);
 }
 
-Container<ValueObject> Reader::readConstants() {
+Container<ValueObject>* Reader::readConstants() {
 
-    Container<ValueObject> values(readInt());
+    Container<ValueObject>* cont = new Container<ValueObject>(readInt());
+    Container<ValueObject>& values = (*cont);
 
     for (int i=0; i<values.count; i++) {
+        Container<ValueObject>& val = values;
         values[i].type = readByte();
         switch(values[i].type) {
             case LUA_TNIL:
@@ -112,7 +114,7 @@ Container<ValueObject> Reader::readConstants() {
                 exit(0); // TODO error
         }
     }
-    return values;
+    return cont;
 }
 void Reader::readUpvalues() {
     int count = readInt();

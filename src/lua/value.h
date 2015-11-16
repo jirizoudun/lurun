@@ -28,6 +28,7 @@ namespace Lua {
         int type;
         Value value;
 
+        ~ValueObject();
         void print();
     };
 

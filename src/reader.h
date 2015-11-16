@@ -29,7 +29,7 @@ private:
     Lua::InstructionList* readCode();
 
     Lua::Function*      readFunction();
-    Lua::Container<Lua::ValueObject> readConstants();
+    Lua::Container<Lua::ValueObject>* readConstants();
     void readUpvalues();
     void readProtos();
     void readDebug();

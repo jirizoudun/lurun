@@ -6,6 +6,17 @@
 
 namespace Lua {
 
+    ValueObject::~ValueObject() {
+        switch(type) {
+            case LUA_TSHRSTR:
+            case LUA_TLNGSTR:
+                delete ((String *)(value.p));
+                break;
+            default:
+                break;
+        }
+    }
+
     void ValueObject::print() {
         switch(type) {
             case LUA_TNIL:

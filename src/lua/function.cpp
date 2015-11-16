@@ -8,7 +8,7 @@ namespace Lua {
 
     Function::Function(String* func_name, int line_defined_first, int line_defined_last, byte num_params,
                        byte is_vararg, byte max_stack_size,
-                       InstructionList* code, Container<ValueObject> constants):
+                       InstructionList* code, Container<ValueObject>* constants):
             func_name(func_name),
             line_defined_first(line_defined_first),
             line_defined_last(line_defined_last),
@@ -22,7 +22,7 @@ namespace Lua {
     Function::~Function() {
         delete func_name;
         delete code;
-        //delete constants; // FIXME will produce memory leaks, need to delete dynamic objects from Value
+        delete constants;
     }
 
     void Function::print() {
@@ -32,6 +32,6 @@ namespace Lua {
         printf("Params: %i, vararg: %i, max stack: %i\n", num_params, is_vararg, max_stack_size);
         code->print();
         printf("Constants:\n");
-        constants.print();
+        constants->print();
     }
 }

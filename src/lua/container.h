@@ -17,6 +17,15 @@ namespace Lua {
             content = new T[count];
         };
 
+
+        Container(Container const& other) {
+            exit(1); // FIXME not implemented
+        }
+
+        ~Container() {
+            delete [] content;
+        }
+
         T& operator[](size_t idx) {
             return content[idx];
         };
