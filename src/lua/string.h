@@ -9,11 +9,11 @@ namespace Lua {
 
     class String {
 
-        size_t length;
+        long long length;
         char * str;
 
     public:
-        String(size_t length, char* str);
+        String(long long length, char* str);
         ~String();
         void print();
     };

@@ -6,7 +6,7 @@
 
 namespace Lua {
 
-    String::String(size_t length, char *str):
+    String::String(long long length, char *str):
             length(length),
             str(str)
     {}

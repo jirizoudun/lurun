@@ -67,16 +67,27 @@ long long Reader::readInteger() {
 }
 
 String* Reader::readString() {
-    uchar byte = getNext();
-    if (byte == 0) {
+    byte size = readByte();
+    if (size == 0) {
         return NULL;
     } else {
-        size_t len = byte;
-        // TODO read long string
-        char* str = new char[len];
-        memcpy(str, lfile.buffer+cursor, len-1);
+        long long len;
+        char* str;
+
+        if (size == 0xFF) { // long string
+            len = readInteger();
+            str = new char[len];
+            for (long long i=0; i<len-1; i++) {
+                str[i] = getNext();
+            }
+        } else { // short string
+            len = size;
+            str = new char[len];
+            memcpy(str, lfile.buffer+cursor, (size_t)len-1);
+            cursor += len-1;
+        }
         str[len-1] = '\0';
-        cursor += len-1;
+
         return new String(len, str);
     }
 }
