@@ -25,6 +25,6 @@ set(SOURCE_FILES
         src/lua/value.cpp
         src/lua/value.h
         src/lua/container.cpp
-        src/lua/container.h)
+        src/lua/container.h src/lua/upvalue.cpp src/lua/upvalue.h)
 
 add_executable(lurun ${SOURCE_FILES})

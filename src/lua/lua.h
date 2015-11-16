@@ -8,6 +8,7 @@
 #include "container.h"
 #include "value.h"
 #include "string.h"
+#include "upvalue.h"
 #include "instruction.h"
 #include "instruction_list.h"
 #include "function.h"

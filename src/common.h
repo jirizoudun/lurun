@@ -24,10 +24,10 @@ struct LFILE{
 typedef unsigned char uchar;
 typedef unsigned char byte;
 
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 #include "lua/lua.h"
 #include "header.h"
 #include "reader.h"

@@ -31,9 +31,10 @@ private:
     Lua::InstructionList* readCode();
 
     Lua::Function*      readFunction();
+
     Lua::Container<Lua::ValueObject>* readConstants();
-    void readUpvalues();
-    void readProtos();
+    Lua::Container<Lua::Upvalue>*     readUpvalues();
+    std::vector<Lua::Function*>*      readProtos();
     void readDebug();
 };
 

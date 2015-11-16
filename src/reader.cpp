@@ -37,14 +37,11 @@ Function* Reader::readFunction() {
     byte                    max_stack   = readByte(); // maxstacksize
     InstructionList*        code        = readCode(); // code
     Container<ValueObject>* constants   = readConstants(); // constants
-
-    /*
-    readUpvalues();
-    readProtos();
+    Container<Upvalue>*     upvalues    = readUpvalues(); // upvalues
+    std::vector<Function*>* protos      = readProtos(); // protos
     readDebug();
-     */
 
-    return new Function(name, line_first, line_last, num_params, is_vararg, max_stack, code, constants);
+    return new Function(name, line_first, line_last, num_params, is_vararg, max_stack, code, constants, upvalues, protos);
 }
 
 byte Reader::readByte() {
@@ -124,19 +121,44 @@ Container<ValueObject>* Reader::readConstants() {
     }
     return cont;
 }
-void Reader::readUpvalues() {
-    int count = readInt();
-    for (int i=0; i<count; i++) {
-        byte instack = readByte();
-        byte idx = readByte();
+Container<Upvalue>* Reader::readUpvalues() {
+
+    Container<Upvalue>* cont = new Container<Upvalue>(readInt());
+
+    for (int i=0; i<cont->count; i++) {
+        (*cont)[i].instack = readByte();
+        (*cont)[i].idx     = readByte();
     }
+
+    return cont;
 }
 
-void Reader::readProtos() {
+std::vector<Function*>* Reader::readProtos() {
+
+    std::vector<Function*>* protos = new std::vector<Function*>();
+
     int count = readInt();
     for (int i=0; i<count; i++) {
-        readFunction();
+        protos->push_back(readFunction());
     }
+    return protos;
 }
 
-void Reader::readDebug() {}
+void Reader::readDebug() {
+    int cnt = readInt();
+    for (int i=0; i<cnt; i++) {
+        readInt();
+    }
+
+    cnt = readInt();
+    for (int i=0; i<cnt; i++) {
+        readString();
+        readInt();
+        readInt();
+    }
+
+    cnt = readInt();
+    for (int i=0; i<cnt; i++) {
+        readString();
+    }
+}
