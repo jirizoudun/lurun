@@ -26,6 +26,11 @@ set(SOURCE_FILES
         src/lua/value.cpp
         src/lua/value.h
         src/lua/container.cpp
-        src/lua/container.h src/lua/upvalue.cpp src/lua/upvalue.h)
+        src/lua/container.h
+        src/lua/upvalue.cpp
+        src/lua/upvalue.h
+        src/vm/vm.cpp
+        src/vm/vm.h
+        src/vm/vm_common.h src/lua/table.cpp src/lua/table.h src/vm/environment.cpp src/vm/environment.h src/vm/closure.cpp src/vm/closure.h)
 
 add_executable(lurun ${SOURCE_FILES})

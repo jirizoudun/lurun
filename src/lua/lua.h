@@ -12,5 +12,6 @@
 #include "instruction.h"
 #include "instruction_list.h"
 #include "function.h"
+#include "table.h"
 
 #endif //LURUN_LUA_H

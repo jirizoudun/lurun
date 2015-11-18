@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 15. 11. 2015.
-//
 
 #ifndef LURUN_COMMON_H
 #define LURUN_COMMON_H
@@ -27,9 +24,12 @@ typedef unsigned char byte;
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <vector>
+#include <unordered_map>
 #include "lua/lua.h"
 #include "header.h"
 #include "reader.h"
+#include "vm/vm_common.h"
 
 #endif //LURUN_COMMON_H

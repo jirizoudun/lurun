@@ -15,6 +15,8 @@
 #define ERROR_HEADER_FORMAT "Invalid format of header!\nPlease, provide file eith valid header.\n"
 #define ERROR_AT_BYTE "Error at byte [%d]\n"
 
+#include <string>
+#include <iostream>
 
 /**
  * Prints binary representation of char.

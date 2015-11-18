@@ -9,13 +9,33 @@ namespace Lua {
     String::String(long long length, char *str):
             length(length),
             str(str)
-    {}
+    {
+        compute_hash();
+    }
+    String::String(const String& other) {
+        length = other.length;
+        str = new char[length];
+        strncpy(str, other.str, length); // TODO watch out! length!
+        compute_hash();
+    }
 
     String::~String() {
         delete [] str;
     }
 
-    void String::print() {
-        printf("%s\n", str);
+    void String::compute_hash() {
+        using std::string;
+        hash = std::hash<string>()(string(str));
+    }
+
+    void String::print() const {
+        printf("<%zu> %s\n", hash, str);
+    }
+    size_t String::getHash() const {
+        return hash;
+    }
+
+    bool String::operator==(const String& other) const {
+        return (strcmp(str, other.str) == 0);
     }
 }
