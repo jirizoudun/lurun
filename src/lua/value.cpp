@@ -23,6 +23,10 @@ namespace Lua {
         type = LUA_TNUMINT;
         value.i = i;
     }
+    ValueObject::ValueObject(int t, void* ptr) {
+        type = t;
+        value.p = ptr;
+    }
 
     ValueObject::ValueObject(const ValueObject& other) {
         type = other.type;
@@ -34,7 +38,8 @@ namespace Lua {
             case LUA_TNUMINT:  value.i = other.value.i; break;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
-                value.p = (void *)(new String(*(String*)(other.value.p)));
+            case LUA_TTABLE: // copy by reference
+                value.p = other.value.p;
                 break;
             default:
                 // TODO error
@@ -42,15 +47,7 @@ namespace Lua {
         }
     }
 
-    ValueObject::~ValueObject() {
-        switch(type) {
-            case LUA_TSHRSTR:
-            case LUA_TLNGSTR:
-                delete ((String *)(value.p));
-                break;
-            default:
-                break;
-        }
+    ValueObject::~ValueObject() { // TODO dynamic objects are deallocated by GC
     }
 
     void ValueObject::print() const {
@@ -70,6 +67,9 @@ namespace Lua {
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
                 ((String*)(value.p))->print();
+                break;
+            case LUA_TTABLE:
+                ((Table*)(value.p))->print();
                 break;
             default:
                 printf("???\n");
@@ -91,7 +91,8 @@ namespace Lua {
                 return value.i == other.value.i;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
-                return ((String*)(value.p)) == ((String*)(other.value.p));
+            case LUA_TTABLE:
+                return (this == &other);
             default:
                 return false;
         }

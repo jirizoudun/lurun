@@ -13,8 +13,11 @@ namespace Lua {
     public:
 
         Table();
+        Table(const Table& other);
 
         void set(ValueObject key, ValueObject value);
+        void set(const char * key, ValueObject value);
+
         ValueObject get(ValueObject key);
 
         void print();

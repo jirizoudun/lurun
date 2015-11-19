@@ -27,6 +27,7 @@ typedef unsigned char byte;
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <assert.h>
 #include "lua/lua.h"
 #include "header.h"
 #include "reader.h"

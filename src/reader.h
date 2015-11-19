@@ -12,7 +12,7 @@ public:
     unsigned cursor;
 
     Reader(LFILE &lfile): lfile(lfile), cursor(0) {};
-    void readFile();
+    Lua::Function* readFile();
 
 private:
 

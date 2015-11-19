@@ -13,6 +13,7 @@
 #define LUA_TNUMINT     19
 #define LUA_TSHRSTR     4
 #define LUA_TLNGSTR     20
+#define LUA_TTABLE		5
 
 namespace Lua {
 
@@ -35,8 +36,10 @@ namespace Lua {
         ValueObject(double d);
         ValueObject(int i);
         ValueObject(long long i);
+        ValueObject(int type, void* ptr);
 
         ValueObject(const ValueObject&);
+        //ValueObject& operator= (const ValueObject& other);
 
         ~ValueObject();
         void print() const;
@@ -57,8 +60,9 @@ namespace Lua {
                 case LUA_TLNGSTR:
                     return ((String *)(o.value.p))->getHash();
                 default:
-                    // TODO error
-                    return 0;
+                case LUA_TTABLE:
+                    // NOT SUPPORTED
+                    assert(false);
             }
         }
     };

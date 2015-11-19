@@ -18,13 +18,19 @@ byte Reader::getNext() {
     return lfile.buffer[cursor++];
 }
 
-void Reader::readFile() {
-    #if VERBOSE
+Function* Reader::readFile() {
+#if VERBOSE
     printf("Reading\n");
-    #endif
+#endif
 
     skip(HEADER_SIZE);
-    (readFunction())->print();
+
+    Function* f = readFunction();
+
+#if VERBOSE
+    f->print();
+#endif
+    return f;
 }
 
 Function* Reader::readFunction() {

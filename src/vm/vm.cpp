@@ -1,49 +1,37 @@
 
 #include "../common.h"
 
-// create table
-// create closure for initial chunk
-// execute chunk
-
 namespace VM {
 
     using namespace Lua;
 
-    void VM::init() {
-        Table table;
+    VM::VM() {
+        stackTop = 0;
+        callStackTop = 0;
+        openUpvals = NULL;
+        lastUpval = NULL;
+    };
 
-        /*
-        Lua::ValueObject a(102);
-        Lua::ValueObject b(105);
-        Lua::ValueObject c(9998118861516);
-        Lua::ValueObject d(161516);
+    void VM::init(Function* initialChunk) {
+        Table _ENV;
 
+        _ENV.set("_G", ValueObject(LUA_TTABLE, (void*)&_ENV));
+        _ENV.print();
 
-        char str[] = "abcasafawfaw";
-        Lua::String* s = new Lua::String(strlen(str), str);
+        stack[stackTop++] = ValueObject(LUA_TTABLE, (void*)&_ENV);
 
-        (*s).print();
-
-        Lua::ValueObject s1;
-        s1.type = LUA_TSHRSTR;
-        s1.value.p = s;
+        openUpvals = lastUpval = new UpvalValue(stack);
 
 
-        table.set(a, b);
-        table.set(c, d);
-        table.print();
-        table.set(a, c);
-        table.print();
-
-        table.set(a, s1);
-        table.print();
-
-        table.set(s1, a);
-        table.print();
-        */
+        CallFrame* f = new CallFrame();
+        f->cl = new Closure(initialChunk);
+        callStack[callStackTop++] = f;
     }
 
     void VM::execute() {
+
+        printf("\nEXECUTE\n\n");
+        callStack[callStackTop-1]->cl->function->print();
 
     }
 

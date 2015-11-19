@@ -6,11 +6,10 @@ namespace VM {
 
     class Closure {
 
-        Lua::Function* function;
-        Lua::Upvalue* upvalues;
-
     public:
-        Closure(Lua::Function* function, int upvalueCount);
+        Lua::Function* function;
+
+        Closure(Lua::Function* function);
         ~Closure();
     };
 

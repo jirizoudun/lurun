@@ -199,7 +199,11 @@ int main(int argc, char **argv) {
 
     // decode file
     Reader* reader = new Reader(lfile);
-    reader->readFile();
+    Lua::Function* f = reader->readFile();
+
+    VM::VM vm;
+    vm.init(f);
+    vm.execute();
 
     return 0;
 }

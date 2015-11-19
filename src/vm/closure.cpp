@@ -5,13 +5,11 @@ namespace VM {
 
     using namespace Lua;
 
-    Closure::Closure(Function *function, int upvalueCount):
+    Closure::Closure(Function *function):
             function(function)
     {
-        upvalues = new Upvalue[upvalueCount];
     }
 
     Closure::~Closure() {
-        delete [] upvalues;
     }
 }
