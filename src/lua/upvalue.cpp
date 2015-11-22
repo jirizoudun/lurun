@@ -6,23 +6,23 @@
 
 namespace Lua {
 
-    Upvalue::Upvalue() {}
-    Upvalue::Upvalue(byte instack, byte idx):
+    UpvalueDesc::UpvalueDesc() {}
+    UpvalueDesc::UpvalueDesc(byte instack, byte idx):
             instack(instack),
 
             idx(idx)
     {}
 
-    void Upvalue::print() const {
+    void UpvalueDesc::print() const {
         printf("In stack: %i, idx: %i\n", instack, idx);
     }
 
-    UpvalValue::UpvalValue(ValueObject* ptr):
+    UpvalueRef::UpvalueRef(ValueObject* ptr):
             voPointer(ptr)
     {
         next = NULL;
     }
-    UpvalValue::UpvalValue(ValueObject vo):
+    UpvalueRef::UpvalueRef(ValueObject vo):
             value(vo)
     {
         next = NULL;

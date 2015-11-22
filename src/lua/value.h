@@ -14,6 +14,8 @@
 #define LUA_TSHRSTR     4
 #define LUA_TLNGSTR     20
 #define LUA_TTABLE		5
+#define LUA_TCLOSURE    6
+#define LUA_TNATIVE     99
 
 namespace Lua {
 
@@ -61,6 +63,8 @@ namespace Lua {
                     return ((String *)(o.value.p))->getHash();
                 default:
                 case LUA_TTABLE:
+                case LUA_TCLOSURE:
+                case LUA_TNATIVE:
                     // NOT SUPPORTED
                     assert(false);
             }

@@ -33,7 +33,7 @@ private:
     Lua::Function*      readFunction();
 
     Lua::Container<Lua::ValueObject>* readConstants();
-    Lua::Container<Lua::Upvalue>*     readUpvalues();
+    Lua::Container<Lua::UpvalueDesc>*     readUpvalues();
     std::vector<Lua::Function*>*      readProtos();
     void readDebug();
 };

@@ -43,7 +43,7 @@ Function* Reader::readFunction() {
     byte                    max_stack   = readByte(); // maxstacksize
     InstructionList*        code        = readCode(); // code
     Container<ValueObject>* constants   = readConstants(); // constants
-    Container<Upvalue>*     upvalues    = readUpvalues(); // upvalues
+    Container<UpvalueDesc>*     upvalues    = readUpvalues(); // upvalues
     std::vector<Function*>* protos      = readProtos(); // protos
     readDebug();
 
@@ -138,9 +138,9 @@ Container<ValueObject>* Reader::readConstants() {
     }
     return cont;
 }
-Container<Upvalue>* Reader::readUpvalues() {
+Container<UpvalueDesc>* Reader::readUpvalues() {
 
-    Container<Upvalue>* cont = new Container<Upvalue>(readInt());
+    Container<UpvalueDesc>* cont = new Container<UpvalueDesc>(readInt());
 
     for (int i=0; i<cont->count; i++) {
         (*cont)[i].instack = readByte();

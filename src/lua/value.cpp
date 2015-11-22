@@ -38,7 +38,9 @@ namespace Lua {
             case LUA_TNUMINT:  value.i = other.value.i; break;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
-            case LUA_TTABLE: // copy by reference
+            case LUA_TTABLE:
+            case LUA_TCLOSURE: // copy by reference
+            case LUA_TNATIVE:
                 value.p = other.value.p;
                 break;
             default:
@@ -71,6 +73,12 @@ namespace Lua {
             case LUA_TTABLE:
                 ((Table*)(value.p))->print();
                 break;
+            case LUA_TCLOSURE:
+                ((Closure*)(value.p))->print();
+                break;
+            case LUA_TNATIVE:
+                ((Native*)(value.p))->print();
+                break;
             default:
                 printf("???\n");
                 break;
@@ -92,6 +100,8 @@ namespace Lua {
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
             case LUA_TTABLE:
+            case LUA_TCLOSURE:
+            case LUA_TNATIVE:
                 return (this == &other);
             default:
                 return false;

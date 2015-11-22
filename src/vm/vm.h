@@ -2,6 +2,8 @@
 #ifndef LURUN_VM_H
 #define LURUN_VM_H
 
+#include "../lua/table.h"
+
 namespace VM {
 
     class VM {
@@ -9,11 +11,13 @@ namespace VM {
         Lua::ValueObject stack[VM_STACK_SIZE];
 
         int stackTop;
-        Lua::UpvalValue* openUpvals;
-        Lua::UpvalValue* lastUpval;
+        Lua::UpvalueRef * openUpvals;
+        Lua::UpvalueRef * lastUpval;
 
         CallFrame* callStack[VM_CALL_STACK_SIZE]; // TODO better stack size, grow dynamically?
         int callStackTop;
+
+        void initEnviroment(Lua::Table *env);
 
     public:
         VM();

@@ -8,34 +8,34 @@
 namespace Lua {
 
     /**
-     * Upvalue description
+     * UpvalueDesc description
      */
-    class Upvalue {
+    class UpvalueDesc {
     public:
         byte instack;
         byte idx;
 
-        Upvalue();
-        Upvalue(byte instack, byte idx);
+        UpvalueDesc();
+        UpvalueDesc(byte instack, byte idx);
         void print() const;
     };
 
     /**
      * Value of given upvalue. Only one per value in whole program.
      */
-    struct UpvalValue {
+    struct UpvalueRef {
 
-        UpvalValue(ValueObject* ptr);
-        UpvalValue(ValueObject vo);
+        UpvalueRef(ValueObject* ptr);
+        UpvalueRef(ValueObject vo);
 
         /** either points to stack or to it's own ValueObject when closed */
         ValueObject* voPointer;
 
-        /** ValueObject used when Upvalue is closed */
+        /** ValueObject used when UpvalueRef is closed */
         ValueObject value;
 
-        /** When open, link to next open Upvalue */
-        UpvalValue* next;
+        /** When open, link to next open UpvalueRef */
+        UpvalueRef * next;
     };
 }
 
