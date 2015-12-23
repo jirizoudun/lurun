@@ -17,6 +17,9 @@ namespace Lua {
         ~InstructionList();
 
         void print();
+
+        int getCount() const;
+        Instruction* getInstruction(const int index) const;
     };
 
 }

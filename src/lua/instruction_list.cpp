@@ -25,4 +25,11 @@ namespace Lua {
             list[i]->print();
         }
     }
+
+    int InstructionList::getCount() const {
+        return count;
+    }
+    Instruction* InstructionList::getInstruction(const int index) const {
+        return list[index];
+    }
 }

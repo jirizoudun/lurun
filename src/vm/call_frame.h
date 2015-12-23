@@ -7,13 +7,14 @@
 namespace VM {
 
     struct CallFrame {
-
-        Lua::ValueObject *closure; //FIXME Add closure into ValueObject
-        Lua::ValueObject *top;
-        Lua::ValueObject *base;
+        Closure *closure;
+        int top;
+        int base;
         CallFrame *prev;
-    };
 
+        CallFrame(CallFrame* prev, Closure* closure, int top, int base);
+        ~CallFrame();
+    };
 }
 
 #endif //LURUN_CALL_FRAME_H

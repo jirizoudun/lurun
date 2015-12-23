@@ -31,6 +31,9 @@ namespace Lua {
     void String::print() const {
         printf("<%zu> %s\n", hash, str);
     }
+    const char* String::toString() const {
+        return str;
+    }
     size_t String::getHash() const {
         return hash;
     }

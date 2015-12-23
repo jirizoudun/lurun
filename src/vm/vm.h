@@ -8,22 +8,22 @@ namespace VM {
 
     class VM {
 
-        Lua::ValueObject stack[VM_STACK_SIZE];
+        Lua::ValueObject* stack[VM_STACK_SIZE];
 
         int stackTop;
         Lua::UpvalueRef * openUpvals;
         Lua::UpvalueRef * lastUpval;
 
-        CallFrame* callStack[VM_CALL_STACK_SIZE]; // TODO better stack size, grow dynamically?
-        int callStackTop;
+        CallFrame* topCallFrame;
 
         void initEnviroment(Lua::Table *env);
-
+        void execute(CallFrame*);
     public:
         VM();
 
         void init(Lua::Function* initialChunk);
-        void execute();
+        void run();
+        void printStack() const;
     };
 
 }

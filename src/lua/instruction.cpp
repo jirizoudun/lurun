@@ -4,43 +4,6 @@
 
 #include "../common.h"
 
-/*
-** size and position of opcode arguments.
-*/
-#define SIZE_C		9
-#define SIZE_B		9
-#define SIZE_Bx		(SIZE_C + SIZE_B)
-#define SIZE_A		8
-#define SIZE_Ax		(SIZE_C + SIZE_B + SIZE_A)
-
-#define SIZE_OP		6
-
-#define POS_OP		0
-#define POS_A		(POS_OP + SIZE_OP)
-#define POS_C		(POS_A + SIZE_A)
-#define POS_B		(POS_C + SIZE_C)
-#define POS_Bx		POS_C
-#define POS_Ax		POS_A
-
-#define MAXARG_Bx        ((1<<SIZE_Bx)-1)
-#define MAXARG_sBx        (MAXARG_Bx>>1)         /* 'sBx' is signed */
-
-/* creates a mask with 'n' 1 bits at position 'p' */
-#define MASK1(n,p)	((~((~(unsigned int)0)<<(n)))<<(p))
-
-#define getarg(i,pos,size)	(((int)((i)>>pos)) & MASK1(size,0))
-
-#define GET_OPCODE(i)	((OpCode)((i>>POS_OP) & MASK1(SIZE_OP,0)))
-
-#define GETARG_A(i)	getarg(i, POS_A, SIZE_A)
-#define GETARG_B(i)	getarg(i, POS_B, SIZE_B)
-#define GETARG_C(i)	getarg(i, POS_C, SIZE_C)
-#define GETARG_Bx(i)	getarg(i, POS_Bx, SIZE_Bx)
-#define GETARG_Ax(i)	getarg(i, POS_Ax, SIZE_Ax)
-#define GETARG_sBx(i)	(GETARG_Bx(i)-MAXARG_sBx)
-
-
-
 namespace Lua {
 
     struct OpCodeInfo {
@@ -163,5 +126,12 @@ namespace Lua {
             default: //FIXME
                 break;
         }
+    }
+
+    OpCode Instruction::getOpCode() {
+        return instruction;
+    }
+    int* Instruction::getArgs() {
+        return args;
     }
 }

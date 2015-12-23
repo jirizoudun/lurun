@@ -201,9 +201,13 @@ int main(int argc, char **argv) {
     Reader* reader = new Reader(lfile);
     Lua::Function* f = reader->readFile();
 
+    printf("..READY FOR VM\n");
+
     VM::VM vm;
     vm.init(f);
-    vm.execute();
+
+    printf("..READY TO EXECUTE\n");
+    vm.run();
 
     return 0;
 }

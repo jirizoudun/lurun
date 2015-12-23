@@ -20,6 +20,7 @@ namespace Lua {
         ~String();
 
         void print() const;
+        const char* toString() const;
 
         size_t getHash()   const;
 

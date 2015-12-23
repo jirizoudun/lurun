@@ -45,4 +45,11 @@ namespace Lua {
             (*protos)[i]->print();
         }
     }
+
+    InstructionList* Function::getCode() const {
+        return code;
+    }
+    byte Function::getMaxStackSize() const {
+        return max_stack_size;
+    }
 }

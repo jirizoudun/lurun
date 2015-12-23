@@ -36,9 +36,9 @@ namespace Lua {
             case LUA_TBOOLEAN: value.b = other.value.b; break;
             case LUA_TNUMFLT:  value.d = other.value.d; break;
             case LUA_TNUMINT:  value.i = other.value.i; break;
+            case LUA_TTABLE:
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
-            case LUA_TTABLE:
             case LUA_TCLOSURE: // copy by reference
             case LUA_TNATIVE:
                 value.p = other.value.p;
@@ -73,8 +73,8 @@ namespace Lua {
             case LUA_TTABLE:
                 ((Table*)(value.p))->print();
                 break;
-            case LUA_TCLOSURE:
-                ((Closure*)(value.p))->print();
+            case LUA_TCLOSURE: // TODO
+                //((Closure*)(value.p))->print();
                 break;
             case LUA_TNATIVE:
                 ((Native*)(value.p))->print();
@@ -84,6 +84,31 @@ namespace Lua {
                 break;
         }
     }
+
+
+    const char* ValueObject::toString() const {
+        char * ptr = new char[50]; // TODO magic constant
+        switch(type) {
+            case LUA_TNIL: return "nil";
+            case LUA_TBOOLEAN: return value.b ? "true" : "false";
+            case LUA_TNUMFLT:
+                sprintf(ptr, "%f", value.d);
+                return ptr;
+            case LUA_TNUMINT:
+                sprintf(ptr, "%lli", value.i);
+                return ptr;
+            case LUA_TSHRSTR:
+            case LUA_TLNGSTR:
+                return ((String*)(value.p))->toString();
+            case LUA_TTABLE:
+                return "<Table>";
+            default:
+                assert(false);
+                break;
+        }
+    }
+
+
 
     // TODO fix comparison based on reference, right now strict comparison
     bool ValueObject::operator==(const ValueObject& other) const {
@@ -99,6 +124,7 @@ namespace Lua {
                 return value.i == other.value.i;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
+                return *((String*)value.p) == *((String*)other.value.p);
             case LUA_TTABLE:
             case LUA_TCLOSURE:
             case LUA_TNATIVE:

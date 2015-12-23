@@ -23,11 +23,11 @@ namespace Lua {
         String* str = new String(strlen(key), str_ptr);
         ValueObject valKey(LUA_TSHRSTR, (void*)str);
 
-        hash_part[valKey] = value;
+        hash_part.insert(std::make_pair<ValueObject&,ValueObject&>(valKey, value));
     }
 
-    ValueObject Table::get(ValueObject key) {
-        return hash_part[key];
+    ValueObject Table::get(ValueObject key) const {
+        return hash_part.at(key);
     }
 
     void Table::print() {

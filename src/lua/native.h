@@ -18,6 +18,8 @@ namespace Lua {
     public:
         Native(int type) : type(type) {};
 
+        void call(ValueObject**, int npar, int nres);
+
         void print();
     };
 }

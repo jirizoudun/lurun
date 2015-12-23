@@ -36,6 +36,8 @@ namespace Lua {
 
         /** When open, link to next open UpvalueRef */
         UpvalueRef * next;
+
+        ValueObject* getValue();
     };
 }
 

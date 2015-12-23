@@ -36,6 +36,10 @@ namespace Lua {
                 content[i].print();
             }
         }
+
+        T get(const int idx) const {
+            return content[idx];
+        }
     };
 
 }

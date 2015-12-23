@@ -1,11 +1,10 @@
 
 #include "../common.h"
 
-namespace Lua {
+namespace VM {
     Closure::Closure(Function *function):
-            function(function)
-    {
-    }
+            proto(function)
+    {}
 
     Closure::~Closure() {
     }

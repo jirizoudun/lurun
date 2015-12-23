@@ -45,6 +45,7 @@ namespace Lua {
 
         ~ValueObject();
         void print() const;
+        const char* toString() const;
 
         bool operator==(const ValueObject& other) const;
     };
