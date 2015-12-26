@@ -17,7 +17,9 @@ namespace VM {
      * Create environment table and other structures needed for VM to run
      */
     void VM::init(Function *initialChunk) {
+#if DEBUG
         printf("\nINIT\n\n");
+#endif
 
         // create environment
         Table* _ENV = new Table();
@@ -36,7 +38,6 @@ namespace VM {
     }
 
     void VM::run() {
-        topCallFrame->closure->upvalues[0]->getValue()->print();
         execute(topCallFrame);
     }
 
@@ -54,50 +55,51 @@ namespace VM {
             int RB = args[1];
             int RC = args[2];
 
-            //inst->print(); // ; debug
+#if DEBUG
+            printf("###################################\n");
+            inst->print(); // ; debug
+            printf("###################################\n");
+#endif
 
             switch(inst->getOpCode()) {
                 case OP_CLOSURE: {
-                    Function *p = proto->protos->at(RB);
-                    Closure *newClosure = new Closure(p);
-                    for(int i = 0; i < p->upvaluesdescs->count; i++)
-                    {
-                        /* upvalue refers to local variable? */
-                        if(p->upvaluesdescs->get(i).instack)
-                        {
+                    Function * p = proto->protos->at(RB);
+                    Closure * newClosure = new Closure(p);
 
-                        }
-                        /* get upvalue from enclosing function */
-                        else
-                        {
+                    for(int i = 0; i < p->upvaluesdescs->count; i++) {
+                        int instack = p->upvaluesdescs->get(i).instack;
+                        int idx = p->upvaluesdescs->get(i).idx;
 
+                        // upvalue refers to local variable?
+                        if (instack) {
+                            // TODO wtf to do here?
+                        // get upvalue from enclosing function
+                        } else {
+                            newClosure->upvalues.push_back(ci->closure->upvalues[idx]);
                         }
                     }
 
-//                    newClosure->upvalues.push_back();
+                    (stack+base)[RA] = new ValueObject(LUA_TCLOSURE, (void*)newClosure);
                     break;
                 }
                 case OP_GETTABUP: {
-                    ValueObject C;
-
-                    if (RC == ISK(RC)) {
-                        C = (*(proto->constants))[INDEXK(RC)];
-                        printf("\n\n\n\n");
-                        //C.print();
-                    } else {
-                        // TODO
-                        //C = stack[base + RC];
-                    };
+                    ValueObject C = getVO(stack + base, proto, RC);
                     Table* t = (Table*)(ci->closure->upvalues[RB]->getValue()->value.p);
+
                     stack[base + RA] = new ValueObject(t->get(C));
                     break;
                 }
-                case OP_SETTABUP:
+                case OP_SETTABUP: { // UpValue[A][RK(B)] := RK(C)
+                    ValueObject B = getVO(stack + base, proto, RB);
+                    ValueObject C = getVO(stack + base, proto, RC);
 
+                    ((Table *) (ci->closure->upvalues[RA]->getValue()->value.p))->set(B, C);
                     break;
+                }
                 case OP_GETUPVAL:
                     stack[base + RA] = ci->closure->upvalues[RB]->getValue();
                     break;
+
                 case OP_LOADK:
                     stack[base + RA] = new ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
                     break;
@@ -107,12 +109,23 @@ namespace VM {
                     if(RC != 0) { ip++; } //TODO: Check this
                     break;
                 case OP_CALL: { // R(A), ... ,R(A+C-2) := R(A)(R(A+1), ... ,R(A+B-1))
+                    /* TODO
+                        if (B == 0) then B = top.
+                        If (C == 0), then 'top' is set to last_result+1
+                        so next open instruction (OP_CALL, OP_RETURN, OP_SETLIST) may use 'top'.
+                     */
+
+                    if (RB == 0) {
+                        assert(false); // TODO
+                    }
+                    if (RC == 0) {
+                        assert(false); // TODO
+                    }
+
                     RA = base + RA;
-                    RB = base + RB;
-                    RC = base + RC;
 
                     int nres = RC - 2;
-                    int npar = RB - 2;
+                    int npar = RB - 1;
 
                     // If npar or nres == -1 than theres indeterminate number of parameters or results
                     // example: print(tostring(false))
@@ -120,21 +133,67 @@ namespace VM {
                     if (stack[RA]->type == LUA_TNATIVE) {
                         ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, nres);
                     } else {
-                        // TODO Lua function
+                        Closure*  nc = ((Closure*)(stack[RA]->value.p));
+                        Function* np = nc->proto;
+
+                        topCallFrame = new CallFrame(ci, nc, ci->top + np->getMaxStackSize(), ci->top, npar, nres);
+                        stackTop += np->getMaxStackSize();
+                        execute(topCallFrame);
+
+                        // return from call frame
+                        delete topCallFrame;
+                        topCallFrame = ci;
                     }
                     break;
                 }
-                case OP_RETURN:
-                    // TODO
+                case OP_RETURN: /* return R(A), ... ,R(A+B-2) */
+                    /* TODO
+                     * In OP_RETURN, if (B == 0) then return up to 'top'.
+                     */
+
+                    if (RB == 0) {
+                        assert(false);
+                    }
+
+                    // TODO return
+
+                    return;
+                case OP_MOVE: // RA = RB
+                    stack[base + RA] = stack[base + RB];
                     break;
+                case OP_CONCAT: { // R(A) := R(B).. ... ..R(C)
+                    const char *B = stack[base + RB]->toString();
+                    const char *C = stack[base + RC]->toString();
+
+                    size_t B_len = strlen(B);
+                    size_t C_len = strlen(C);
+
+                    char *concat = new char[B_len + C_len];
+                    memcpy(concat, B, B_len * sizeof(char));
+                    memcpy(concat + B_len, C, C_len * sizeof(char));
+
+                    String* str = new String(B_len + C_len, concat);
+                    stack[base + RA] = new ValueObject(LUA_TSHRSTR, str); // TODO LUA_T_LNGSTR
+                    break;
+                }
                 default:
                     printf("unknown inst\n");
                     break;
             }
 
-            //printStack(); // ; debug
+#if DEBUG
+            printStack(ci); // ; debug
+#endif
         }
 
+    }
+
+    ValueObject VM::getVO(ValueObject** stack, Function * proto, int R) const {
+        if (ISK(R)) {
+            return (*(proto->constants))[INDEXK(R)];
+        } else {
+            return *(stack[R]);
+        }
     }
 
     void VM::initEnviroment(Table *env) {
@@ -148,14 +207,16 @@ namespace VM {
 
         //TODO other native methods
 
+#if DEBUG
         printf("_ENV:\n");
         env->print();
+#endif
     }
 
-    void VM::printStack() const {
+    void VM::printStack(CallFrame * ci) const {
         printf("\n---- STACK ----------------\n");
         for (int i=0;i<stackTop;i++) {
-            printf("%i | ", i);
+            printf("%i | ", i - ci->base);
             if (stack[i] == NULL) {
                 printf("NULL\n");
             } else {

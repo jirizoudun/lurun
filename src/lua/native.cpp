@@ -6,11 +6,16 @@ namespace Lua {
         printf("Native\n");
     }
 
+    NativeType Native::getType() {
+        return type;
+    }
+
+
     void Native::call(ValueObject **stack, int npar, int nres) {
         switch (this->type) {
             //TODO: Fix npar, nres = -1 cases.
             case LUA_NAT_PRINT:
-                if (npar != 1 && nres != 0) { assert(false); }
+                if (npar != 1 || nres != -1) { assert(false); }
                 printf("%s\n", stack[1]->toString());
                 break;
 
@@ -24,7 +29,7 @@ namespace Lua {
                 if (npar != 1) { assert(false); }
                 if (nres >= 0) {
                     char *str = to_s(stack[1]);
-                    for (int i = 0; i < nres; i++) {
+                    for (int i = 0; i <= nres; i++) {
                         ValueObject *vo = new ValueObject(LUA_TSHRSTR, new String(strlen(str), str));
                         stack[i] = vo;
                     }
@@ -62,7 +67,7 @@ namespace Lua {
                     }
 
 
-                    for (int i = 0; i < nres; i++) {
+                    for (int i = 0; i <= nres; i++) {
                         ValueObject *v = new ValueObject(vo);
                         stack[i] = v;
                     }
@@ -76,7 +81,9 @@ namespace Lua {
                     Table *t = ((Table *) stack[1]->value.p);
                     ValueObject vo = t->get(*stack[2]);
 
-                    stack[1] = new ValueObject(vo);
+                    for(int i = 0; i <= nres; i++) {
+                        stack[i] = new ValueObject(vo);
+                    }
                 }
                 break;
 

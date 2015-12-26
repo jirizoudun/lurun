@@ -23,7 +23,9 @@ namespace VM {
 
         void init(Lua::Function* initialChunk);
         void run();
-        void printStack() const;
+        void printStack(CallFrame*) const;
+
+        ValueObject getVO(ValueObject** stack, Function * proto, int R) const;
     };
 
 }

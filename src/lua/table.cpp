@@ -34,6 +34,7 @@ namespace Lua {
         printf("Table <%zu elements>:\n", hash_part.size());
         for (auto it = hash_part.begin(); it != hash_part.end(); ++it) {
             printf("\t");
+            printf("[%i] ", (it->second).type);
             (it->first).print();
         }
     }

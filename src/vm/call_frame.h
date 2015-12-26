@@ -12,7 +12,10 @@ namespace VM {
         int base;
         CallFrame *prev;
 
-        CallFrame(CallFrame* prev, Closure* closure, int top, int base);
+        int npar;
+        int nres;
+
+        CallFrame(CallFrame* prev, Closure* closure, int top, int base, int npar=0, int nres=0);
         ~CallFrame();
     };
 }

@@ -165,7 +165,9 @@ int checkheader(LFILE *lfile)
 
 
 int main(int argc, char **argv) {
+#if VERBOSE
     printf("Loader started\n");
+#endif
 
     bool retval;
 
@@ -195,18 +197,24 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+#if VERBOSE
     printf("OK!\n");
+#endif
 
     // decode file
     Reader* reader = new Reader(lfile);
     Lua::Function* f = reader->readFile();
 
+#if VERBOSE
     printf("..READY FOR VM\n");
+#endif
 
     VM::VM vm;
     vm.init(f);
 
+#if VERBOSE
     printf("..READY TO EXECUTE\n");
+#endif
     vm.run();
 
     return 0;

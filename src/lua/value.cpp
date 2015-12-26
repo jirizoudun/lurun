@@ -74,6 +74,7 @@ namespace Lua {
                 ((Table*)(value.p))->print();
                 break;
             case LUA_TCLOSURE: // TODO
+                printf("Closure\n");
                 //((Closure*)(value.p))->print();
                 break;
             case LUA_TNATIVE:
@@ -102,6 +103,9 @@ namespace Lua {
                 return ((String*)(value.p))->toString();
             case LUA_TTABLE:
                 return "<Table>";
+            case LUA_TNATIVE:
+                sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());
+                return ptr;
             default:
                 assert(false);
                 break;
