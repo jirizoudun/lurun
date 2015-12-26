@@ -95,6 +95,9 @@ namespace VM {
                 case OP_SETTABUP:
 
                     break;
+                case OP_GETUPVAL:
+                    stack[base + RA] = ci->closure->upvalues[RB]->getValue();
+                    break;
                 case OP_LOADK:
                     stack[base + RA] = new ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
                     break;
@@ -110,6 +113,9 @@ namespace VM {
 
                     int nres = RC - 2;
                     int npar = RB - 2;
+
+                    // If npar or nres == -1 than theres indeterminate number of parameters or results
+                    // example: print(tostring(false))
 
                     if (stack[RA]->type == LUA_TNATIVE) {
                         ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, nres);
@@ -135,6 +141,10 @@ namespace VM {
         env->set("_G", ValueObject(LUA_TTABLE, (void *) env));
         env->set("print", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_PRINT))));
         env->set("assert", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_ASSERT))));
+        env->set("tonumber", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_TONUMBER))));
+        env->set("tostring", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_TOSTRING))));
+        env->set("rawget", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_RAWGET))));
+        env->set("rawset", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_RAWSET))));
 
         //TODO other native methods
 

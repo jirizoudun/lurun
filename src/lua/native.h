@@ -5,9 +5,14 @@
 #ifndef LURUN_NATIVE_H
 #define LURUN_NATIVE_H
 
-#define LUA_NAT_PRINT 0
-#define LUA_NAT_ASSERT 1
-#define LUA_NAT_TOSTRING 2
+enum lua_natives {
+    LUA_NAT_PRINT = 0,
+    LUA_NAT_ASSERT,
+    LUA_NAT_TOSTRING,
+    LUA_NAT_TONUMBER,
+    LUA_NAT_RAWGET,
+    LUA_NAT_RAWSET,
+};
 
 namespace Lua {
     class Native {
@@ -15,7 +20,7 @@ namespace Lua {
         int type;
 
         // Helper methods
-        const char * to_s(const ValueObject* vo);
+        char * to_s(const ValueObject* vo);
 
     public:
         Native(int type) : type(type) {};
