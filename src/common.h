@@ -3,6 +3,7 @@
 #define LURUN_COMMON_H
 
 #define VERBOSE 1
+#define DEBUG 1
 
 #define MAX_FILENAME_LENGTH 128
 #define BUFFER_SIZE 1048576 //MB

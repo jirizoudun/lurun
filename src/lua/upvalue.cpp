@@ -18,7 +18,6 @@ namespace Lua {
     }
 
     UpvalueRef::UpvalueRef(ValueObject* ptr) {
-        ptr->print();
         voPointer = ptr;
         next = NULL;
     }

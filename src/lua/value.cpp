@@ -74,6 +74,7 @@ namespace Lua {
                 ((Table*)(value.p))->print();
                 break;
             case LUA_TCLOSURE: // TODO
+                printf("Closure\n");
                 //((Closure*)(value.p))->print();
                 break;
             case LUA_TNATIVE:
