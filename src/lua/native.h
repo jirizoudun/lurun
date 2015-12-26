@@ -6,14 +6,16 @@
 #define LURUN_NATIVE_H
 
 #define LUA_NAT_PRINT 0
+#define LUA_NAT_ASSERT 1
+#define LUA_NAT_TOSTRING 2
 
 namespace Lua {
     class Native {
-        //Static function defines
-        static void printToConsole(const char *text);
-
         //Type of native function
         int type;
+
+        // Helper methods
+        const char * to_s(const ValueObject* vo);
 
     public:
         Native(int type) : type(type) {};

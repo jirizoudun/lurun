@@ -57,6 +57,26 @@ namespace VM {
             //inst->print(); // ; debug
 
             switch(inst->getOpCode()) {
+                case OP_CLOSURE: {
+                    Function *p = proto->protos->at(RB);
+                    Closure *newClosure = new Closure(p);
+                    for(int i = 0; i < p->upvaluesdescs->count; i++)
+                    {
+                        /* upvalue refers to local variable? */
+                        if(p->upvaluesdescs->get(i).instack)
+                        {
+
+                        }
+                        /* get upvalue from enclosing function */
+                        else
+                        {
+
+                        }
+                    }
+
+//                    newClosure->upvalues.push_back();
+                    break;
+                }
                 case OP_GETTABUP: {
                     ValueObject C;
 
@@ -72,8 +92,16 @@ namespace VM {
                     stack[base + RA] = new ValueObject(t->get(C));
                     break;
                 }
+                case OP_SETTABUP:
+
+                    break;
                 case OP_LOADK:
                     stack[base + RA] = new ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
+                    break;
+                case OP_LOADBOOL:
+                    stack[base + RA] = new ValueObject((bool)RB);
+
+                    if(RC != 0) { ip++; } //TODO: Check this
                     break;
                 case OP_CALL: { // R(A), ... ,R(A+C-2) := R(A)(R(A+1), ... ,R(A+B-1))
                     RA = base + RA;
@@ -106,6 +134,7 @@ namespace VM {
     void VM::initEnviroment(Table *env) {
         env->set("_G", ValueObject(LUA_TTABLE, (void *) env));
         env->set("print", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_PRINT))));
+        env->set("assert", ValueObject(LUA_TNATIVE, (void *)(new Native(LUA_NAT_ASSERT))));
 
         //TODO other native methods
 
