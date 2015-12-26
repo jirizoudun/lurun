@@ -101,7 +101,7 @@ namespace Lua {
         char *result;
         switch (vo->type) {
             case LUA_TNIL:
-                result = "nil";
+                sprintf(result, "%s", "nil");
                 break;
 
             case LUA_TSHRSTR:
@@ -121,7 +121,8 @@ namespace Lua {
                 break;
 
             default:
-                result = ""; //TODO: Functions, tables, etc
+                sprintf(result, "%s", "");
+                //result = ""; //TODO: Functions, tables, etc
                 break;
         }
 

@@ -99,5 +99,6 @@ typedef unsigned char byte;
 #include "header.h"
 #include "reader.h"
 #include "vm/vm_common.h"
+#include <math.h>
 
 #endif //LURUN_COMMON_H
