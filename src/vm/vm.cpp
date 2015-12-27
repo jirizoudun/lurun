@@ -57,6 +57,7 @@ namespace VM {
 
 #if DEBUG
             printf("###################################\n");
+            printf("%i: ", ip);
             inst->print(); // ; debug
             printf("###################################\n");
 #endif
@@ -132,14 +133,45 @@ namespace VM {
                     break;
                 case OP_LOADBOOL:
                     stack[base + RA] = new ValueObject((bool)RB);
-
                     if(RC != 0) { ip++; } //TODO: Check this
                     break;
+
+
+                case OP_JMP: { // pc+=sBx; if (A) close all upvalues >= R(A - 1)
+
+                    if (RA != 0) {
+                        assert(false); // TODO
+                    }
+
+                    ip += RB;
+                    break;
+                }
+                case OP_LT: { // if ((RK(B) <  RK(C)) ~= A) then pc++
+                    ValueObject B = getVO(stack + base, proto, RB);
+                    ValueObject C = getVO(stack + base, proto, RC);
+
+                    bool res;
+
+                    if (B.type == LUA_TSTRING && C.type == LUA_TSTRING) {
+                        res = ((StringObject*)B.value.p)->getString() < ((StringObject*)C.value.p)->getString();
+                    } else if (IS_NUMERIC(B.type) && IS_NUMERIC(C.type)) {
+                        res = (B.type == LUA_TNUMINT && C.type == LUA_TNUMINT && B.value.i < C.value.i)
+                           || (B.type == LUA_TNUMINT && C.type == LUA_TNUMFLT && B.value.i < C.value.d)
+                           || (B.type == LUA_TNUMFLT && C.type == LUA_TNUMINT && B.value.d < C.value.i)
+                           || (B.type == LUA_TNUMFLT && C.type == LUA_TNUMFLT && B.value.d < C.value.d);
+                    } else {
+                        printf("bad comparison\n");
+                        assert(false);
+                    }
+
+                    if (res != (bool)RA) {++ip;}
+                    break;
+                }
+
                 case OP_CALL: { // R(A), ... ,R(A+C-2) := R(A)(R(A+1), ... ,R(A+B-1))
-                    /* TODO
-                        if (B == 0) then B = top.
-                        If (C == 0), then 'top' is set to last_result+1
-                        so next open instruction (OP_CALL, OP_RETURN, OP_SETLIST) may use 'top'.
+                    /* If (B == 0) then B = top.
+                     * If (C == 0), then 'top' is set to last_result+1
+                     * so next open instruction (OP_CALL, OP_RETURN, OP_SETLIST) may use 'top'.
                      */
 
                     if (RB == 0) {

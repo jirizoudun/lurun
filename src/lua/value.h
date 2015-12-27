@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 15. 11. 2015.
-//
 
 #ifndef LURUN_VALUE_H
 #define LURUN_VALUE_H
@@ -17,6 +14,8 @@
 #define LUA_TTABLE		5
 #define LUA_TCLOSURE    6
 #define LUA_TNATIVE     99
+
+#define IS_NUMERIC(type) ((type & 3) == 3)
 
 namespace Lua {
 
