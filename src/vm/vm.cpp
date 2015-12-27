@@ -26,7 +26,7 @@ namespace VM {
 
         // create upvalue from environment
         stack[stackTop++] = new ValueObject(LUA_TTABLE, (void *)_ENV);
-        lastUpval = new UpvalueRef(stack[stackTop-1], NULL); // new upvalue from _ENV table
+        lastUpval = new UpvalueRef(stack + stackTop - 1, NULL); // new upvalue from _ENV table
 
         // create call frame
         Closure * baseClosure = new Closure(initialChunk);
@@ -72,9 +72,24 @@ namespace VM {
                         // upvalue refers to local variable of enclosing function
                         if (instack) {
 
-                            lastUpval = new UpvalueRef(stack[base + idx], lastUpval);
-                            newClosure->upvalues.push_back(lastUpval);
+                            ValueObject ** ptr = stack + base + idx;
 
+                            // find upval
+                            UpvalueRef * upval = lastUpval;
+                            while (upval != NULL) {
+                                if (upval->voPointer == ptr) {
+                                    newClosure->upvalues.push_back(upval);
+                                    break;
+                                } else {
+                                    upval = upval->next;
+                                }
+                            }
+
+                            // upval wasn't found, create new one
+                            if (upval == NULL) {
+                                lastUpval = new UpvalueRef(ptr, lastUpval);
+                                newClosure->upvalues.push_back(lastUpval);
+                            }
                         // get upvalue from enclosing function
                         } else {
                             newClosure->upvalues.push_back(ci->closure->upvalues[idx]);
@@ -102,6 +117,15 @@ namespace VM {
                     stack[base + RA] = ci->closure->upvalues[RB]->getValue();
                     break;
 
+                case OP_SETUPVAL: { // UpValue[B] := R(A)
+                    UpvalueRef *upv = ci->closure->upvalues[RB];
+                    if (upv->voPointer == NULL) {
+                        upv->value = *stack[base + RA];
+                    } else {
+                        upv->voPointer = stack + base + RA;
+                    }
+                    break;
+                }
                 case OP_LOADK:
                     stack[base + RA] = new ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
                     break;
@@ -157,21 +181,28 @@ namespace VM {
                         assert(false);
                     }
 
+                    // close upvalues
+                    for(int R = base; R < base+ci->top; R++) {
+                        if (stack[R] == NULL || stack[R]->type != LUA_TCLOSURE) {continue;}
+
+                        Closure * clClosure = (Closure*)stack[R]->value.p;
+                        Function* clProto = clClosure->proto;
+                        for(int i = 0; i < clProto->upvaluesdescs->count; i++) {
+
+                            if (clProto->upvaluesdescs->get(i).instack) {
+                                UpvalueRef * toClose = clClosure->upvalues[i];
+                                if (toClose == lastUpval) {
+                                    lastUpval = toClose->next;
+                                }
+                                toClose->close();
+                            }
+                        }
+                    }
+
                     // move from my registers to parent registers
                     int R = base - 1;
                     for (int i = RA; i <= RA + RB - 2; i++) {
                         stack[R++] = stack[base + i];
-                    }
-
-                    // close upvalues
-                    for(int i = 0; i < proto->upvaluesdescs->count; i++) {
-                        if (proto->upvaluesdescs->get(i).instack) {
-                            UpvalueRef * toClose = ci->closure->upvalues[i];
-                            if (toClose == lastUpval) {
-                                lastUpval = toClose->next;
-                            }
-                            toClose->close();
-                        }
                     }
                     return;
                 }
