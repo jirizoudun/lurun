@@ -11,7 +11,6 @@ namespace VM {
         Lua::ValueObject* stack[VM_STACK_SIZE];
 
         int stackTop;
-        Lua::UpvalueRef * openUpvals;
         Lua::UpvalueRef * lastUpval;
 
         CallFrame* topCallFrame;

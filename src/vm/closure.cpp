@@ -8,8 +8,4 @@ namespace VM {
 
     Closure::~Closure() {
     }
-
-    void Closure::print() {
-        printf("Closure\n");
-    }
 }

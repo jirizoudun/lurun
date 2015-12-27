@@ -17,14 +17,19 @@ namespace Lua {
         printf("In stack: %i, idx: %i\n", instack, idx);
     }
 
-    UpvalueRef::UpvalueRef(ValueObject* ptr) {
+    UpvalueRef::UpvalueRef(ValueObject* ptr, UpvalueRef* next) {
         voPointer = ptr;
-        next = NULL;
+        this->next = next;
+        prev = NULL;
+        if (next != NULL) {
+            next->prev = this;
+        }
     }
-    UpvalueRef::UpvalueRef(ValueObject vo):
-            value(vo)
+    UpvalueRef::UpvalueRef(ValueObject vo, UpvalueRef* next):
+            value(vo), next(next)
     {
-        next = NULL;
+        prev = NULL;
+        next->prev = this;
     }
 
     ValueObject* UpvalueRef::getValue() {
@@ -33,6 +38,20 @@ namespace Lua {
         } else {
             return &value;
         }
+    }
+
+    void UpvalueRef::close() {
+        if(voPointer == NULL) {return;}
+
+        value = *voPointer;
+        voPointer = NULL;
+
+        UpvalueRef* p = prev;
+        UpvalueRef* n = next;
+
+        if (prev != NULL) {prev->next = next;}
+        if (next != NULL) {next->prev = prev;}
+
     }
 
 }

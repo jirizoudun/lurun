@@ -7,7 +7,6 @@ namespace VM {
     VM::VM() {
         stackTop = 0;
         topCallFrame = NULL;
-        openUpvals = NULL;
         lastUpval = NULL;
 
         memset(stack, 0, VM_STACK_SIZE);
@@ -27,7 +26,7 @@ namespace VM {
 
         // create upvalue from environment
         stack[stackTop++] = new ValueObject(LUA_TTABLE, (void *)_ENV);
-        openUpvals = lastUpval = new UpvalueRef(stack[stackTop-1]); // new upvalue from _ENV table
+        lastUpval = new UpvalueRef(stack[stackTop-1], NULL); // new upvalue from _ENV table
 
         // create call frame
         Closure * baseClosure = new Closure(initialChunk);
@@ -70,9 +69,12 @@ namespace VM {
                         int instack = p->upvaluesdescs->get(i).instack;
                         int idx = p->upvaluesdescs->get(i).idx;
 
-                        // upvalue refers to local variable?
+                        // upvalue refers to local variable of enclosing function
                         if (instack) {
-                            // TODO wtf to do here?
+
+                            lastUpval = new UpvalueRef(stack[base + idx], lastUpval);
+                            newClosure->upvalues.push_back(lastUpval);
+
                         // get upvalue from enclosing function
                         } else {
                             newClosure->upvalues.push_back(ci->closure->upvalues[idx]);
@@ -116,37 +118,37 @@ namespace VM {
                      */
 
                     if (RB == 0) {
-                        assert(false); // TODO
-                    }
-                    if (RC == 0) {
-                        assert(false); // TODO
+                        RB = ci->top + 1; // TODO not sure if correct but seems to work
                     }
 
                     RA = base + RA;
 
-                    int nres = RC - 2;
-                    int npar = RB - 1;
+                    int last_result = RC - 2;
+                    int last_param  = RB - 1;
 
-                    // If npar or nres == -1 than theres indeterminate number of parameters or results
+                    // If npar or nres == -1 then there's indeterminate number of parameters or results
                     // example: print(tostring(false))
 
                     if (stack[RA]->type == LUA_TNATIVE) {
-                        ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, nres);
+                        ((Native *) (stack[RA]->value.p))->call(stack + RA, last_param, last_result);
                     } else {
                         Closure*  nc = ((Closure*)(stack[RA]->value.p));
                         Function* np = nc->proto;
 
-                        topCallFrame = new CallFrame(ci, nc, ci->top + np->getMaxStackSize(), ci->top, npar, nres);
-                        stackTop += np->getMaxStackSize();
+                        topCallFrame = new CallFrame(ci, nc, RA + np->getMaxStackSize() + 1, RA+1, last_param, last_result);
                         execute(topCallFrame);
 
                         // return from call frame
                         delete topCallFrame;
                         topCallFrame = ci;
                     }
+
+                    if (RC == 0) {
+                        ci->top = RA + last_result + 1;
+                    }
                     break;
                 }
-                case OP_RETURN: /* return R(A), ... ,R(A+B-2) */
+                case OP_RETURN: { /* return R(A), ... ,R(A+B-2) */
                     /* TODO
                      * In OP_RETURN, if (B == 0) then return up to 'top'.
                      */
@@ -155,9 +157,24 @@ namespace VM {
                         assert(false);
                     }
 
-                    // TODO return
+                    // move from my registers to parent registers
+                    int R = base - 1;
+                    for (int i = RA; i <= RA + RB - 2; i++) {
+                        stack[R++] = stack[base + i];
+                    }
 
+                    // close upvalues
+                    for(int i = 0; i < proto->upvaluesdescs->count; i++) {
+                        if (proto->upvaluesdescs->get(i).instack) {
+                            UpvalueRef * toClose = ci->closure->upvalues[i];
+                            if (toClose == lastUpval) {
+                                lastUpval = toClose->next;
+                            }
+                            toClose->close();
+                        }
+                    }
                     return;
+                }
                 case OP_MOVE: // RA = RB
                     stack[base + RA] = stack[base + RB];
                     break;
@@ -176,8 +193,35 @@ namespace VM {
                     stack[base + RA] = new ValueObject(LUA_TSHRSTR, str); // TODO LUA_T_LNGSTR
                     break;
                 }
+
+                case OP_ADD: {
+                    ValueObject B = getVO(stack + base, proto, RB);
+                    ValueObject C = getVO(stack + base, proto, RC);
+                    ValueObject * res;
+
+                    assert(B.type == LUA_TNUMINT || B.type == LUA_TNUMFLT
+                        || C.type == LUA_TNUMINT || C.type == LUA_TNUMFLT);
+
+                    if (B.type == LUA_TNUMFLT && C.type == LUA_TNUMFLT) {
+
+                        res = new ValueObject(B.value.d + C.value.d);
+
+                    } else if (B.type == LUA_TNUMFLT || C.type == LUA_TNUMFLT) {
+                        if (B.type == LUA_TNUMINT) {
+                            res = new ValueObject(B.value.i + C.value.d);
+                        } else {
+                            res = new ValueObject(B.value.d + C.value.i);
+                        }
+                    } else {
+                        res = new ValueObject(B.value.i + C.value.i);
+                    }
+
+                    stack[base + RA] = res;
+                    break;
+                }
                 default:
                     printf("unknown inst\n");
+                    assert(false);
                     break;
             }
 
@@ -215,7 +259,7 @@ namespace VM {
 
     void VM::printStack(CallFrame * ci) const {
         printf("\n---- STACK ----------------\n");
-        for (int i=0;i<stackTop;i++) {
+        for (int i=0;i<ci->top;i++) {
             printf("%i | ", i - ci->base);
             if (stack[i] == NULL) {
                 printf("NULL\n");

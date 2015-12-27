@@ -14,8 +14,6 @@ namespace VM {
 
         Closure(Function* function);
         ~Closure();
-
-        void print();
     };
 
 }
