@@ -6,7 +6,7 @@
 
 namespace Lua {
 
-    Function::Function(String* func_name, int line_defined_first, int line_defined_last, byte num_params,
+    Function::Function(StringObject * func_name, int line_defined_first, int line_defined_last, byte num_params,
                        byte is_vararg, byte max_stack_size,
                        InstructionList* code,
                        Container<ValueObject>* constants, Container<UpvalueDesc>* upvalues, std::vector<Function*>* protos):

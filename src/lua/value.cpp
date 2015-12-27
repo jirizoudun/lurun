@@ -37,8 +37,7 @@ namespace Lua {
             case LUA_TNUMFLT:  value.d = other.value.d; break;
             case LUA_TNUMINT:  value.i = other.value.i; break;
             case LUA_TTABLE:
-            case LUA_TSHRSTR:
-            case LUA_TLNGSTR:
+            case LUA_TSTRING:
             case LUA_TCLOSURE: // copy by reference
             case LUA_TNATIVE:
                 value.p = other.value.p;
@@ -66,9 +65,8 @@ namespace Lua {
             case LUA_TNUMINT:
                 printf("%lli\n", value.i);
                 break;
-            case LUA_TSHRSTR:
-            case LUA_TLNGSTR:
-                ((String*)(value.p))->print();
+            case LUA_TSTRING:
+                ((StringObject *)(value.p))->print();
                 break;
             case LUA_TTABLE:
                 ((Table*)(value.p))->print();
@@ -97,9 +95,8 @@ namespace Lua {
             case LUA_TNUMINT:
                 sprintf(ptr, "%lli", value.i);
                 return ptr;
-            case LUA_TSHRSTR:
-            case LUA_TLNGSTR:
-                return ((String*)(value.p))->toString();
+            case LUA_TSTRING:
+                return ((StringObject *)(value.p))->toString();
             case LUA_TTABLE:
                 return "<Table>";
             case LUA_TNATIVE:
@@ -125,9 +122,8 @@ namespace Lua {
                 return value.d == other.value.d; // TODO epsilon comparison
             case LUA_TNUMINT:
                 return value.i == other.value.i;
-            case LUA_TSHRSTR:
-            case LUA_TLNGSTR:
-                return *((String*)value.p) == *((String*)other.value.p);
+            case LUA_TSTRING:
+                return ((StringObject *)value.p)->getHash() == ((StringObject *)other.value.p)->getHash();
             case LUA_TTABLE:
             case LUA_TCLOSURE:
             case LUA_TNATIVE:

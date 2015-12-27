@@ -18,8 +18,8 @@ set(SOURCE_FILES
         src/lua/function.h
         src/lua/instruction.cpp
         src/lua/instruction.h
-        src/lua/string.cpp
-        src/lua/string.h
+        src/lua/string_object.cpp
+        src/lua/string_object.h
         src/lua/lua.h
         src/lua/instruction_list.cpp
         src/lua/instruction_list.h

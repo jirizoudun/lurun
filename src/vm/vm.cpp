@@ -213,15 +213,10 @@ namespace VM {
                     const char *B = stack[base + RB]->toString();
                     const char *C = stack[base + RC]->toString();
 
-                    size_t B_len = strlen(B);
-                    size_t C_len = strlen(C);
+                    string* concat = new string(B);
+                    concat->append(C);
 
-                    char *concat = new char[B_len + C_len];
-                    memcpy(concat, B, B_len * sizeof(char));
-                    memcpy(concat + B_len, C, C_len * sizeof(char));
-
-                    String* str = new String(B_len + C_len, concat);
-                    stack[base + RA] = new ValueObject(LUA_TSHRSTR, str); // TODO LUA_T_LNGSTR
+                    stack[base + RA] = new ValueObject(LUA_TSTRING, new StringObject(concat));
                     break;
                 }
 

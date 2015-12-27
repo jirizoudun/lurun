@@ -27,7 +27,7 @@ private:
     double              readNumber();
     long long           readInteger();
 
-    Lua::String*        readString();
+    Lua::StringObject *        readString();
     Lua::InstructionList* readCode();
 
     Lua::Function*      readFunction();

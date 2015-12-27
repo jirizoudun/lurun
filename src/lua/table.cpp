@@ -16,12 +16,8 @@ namespace Lua {
         hash_part[key] = value;
     }
     void Table::set(const char* key, ValueObject value) { // TODO refactor?
-        size_t len = strlen(key)+1;
-        char * str_ptr = new char[len];
-        strncpy(str_ptr, key, len);
-
-        String* str = new String(strlen(key), str_ptr);
-        ValueObject valKey(LUA_TSHRSTR, (void*)str);
+        StringObject * str = new StringObject(key);
+        ValueObject valKey(LUA_TSTRING, (void*)str);
 
         hash_part.insert(std::make_pair<ValueObject&,ValueObject&>(valKey, value));
     }

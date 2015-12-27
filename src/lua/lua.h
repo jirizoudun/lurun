@@ -7,7 +7,7 @@
 
 #include "container.h"
 #include "value.h"
-#include "string.h"
+#include "string_object.h"
 #include "upvalue.h"
 #include "instruction.h"
 #include "instruction_list.h"

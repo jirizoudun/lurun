@@ -35,7 +35,7 @@ Function* Reader::readFile() {
 
 Function* Reader::readFunction() {
 
-    String*                 name        = readString(); // source name?
+    StringObject *                 name        = readString(); // source name?
     int                     line_first  = readInt(); // line defined
     int                     line_last   = readInt(); // lastlinedefined
     byte                    num_params  = readByte(); // numparams
@@ -72,7 +72,7 @@ long long Reader::readInteger() {
     return number;
 }
 
-String* Reader::readString() {
+StringObject * Reader::readString() {
     byte size = readByte();
     if (size == 0) {
         return NULL;
@@ -94,7 +94,7 @@ String* Reader::readString() {
         }
         str[len-1] = '\0';
 
-        return new String(len, str);
+        return new StringObject(str);
     }
 }
 
@@ -130,6 +130,7 @@ Container<ValueObject>* Reader::readConstants() {
                 break;
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
+                values[i].type = LUA_TSTRING;
                 values[i].value.p = (void*)readString();
                 break;
             default:

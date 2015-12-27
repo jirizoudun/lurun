@@ -5,14 +5,15 @@
 #ifndef LURUN_VALUE_H
 #define LURUN_VALUE_H
 
-#include "string.h"
+#include "string_object.h"
 
 #define LUA_TNIL        0
 #define LUA_TBOOLEAN    1
 #define LUA_TNUMFLT     3
 #define LUA_TNUMINT     19
-#define LUA_TSHRSTR     4
-#define LUA_TLNGSTR     20
+#define LUA_TSHRSTR     4   // WARNING: used only for reading, never used in VM, use LUA_TSTRING instead
+#define LUA_TLNGSTR     20  // WARNING: used only for reading, never used in VM, use LUA_TSTRING instead
+#define LUA_TSTRING     100
 #define LUA_TTABLE		5
 #define LUA_TCLOSURE    6
 #define LUA_TNATIVE     99
@@ -59,9 +60,8 @@ namespace Lua {
                     return std::hash<double>()(o.value.d);
                 case LUA_TNUMINT:
                     return std::hash<long long>()(o.value.i);
-                case LUA_TSHRSTR:
-                case LUA_TLNGSTR:
-                    return ((String *)(o.value.p))->getHash();
+                case LUA_TSTRING:
+                    return ((StringObject *)(o.value.p))->getHash();
                 default:
                 case LUA_TTABLE:
                 case LUA_TCLOSURE:

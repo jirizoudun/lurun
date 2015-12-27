@@ -30,7 +30,7 @@ namespace Lua {
                 if (nres >= 0) {
                     char *str = to_s(stack[1]);
                     for (int i = 0; i <= nres; i++) {
-                        ValueObject *vo = new ValueObject(LUA_TSHRSTR, new String(strlen(str), str));
+                        ValueObject *vo = new ValueObject(LUA_TSTRING, new StringObject(str));
                         stack[i] = vo;
                     }
                     delete str;
@@ -41,9 +41,9 @@ namespace Lua {
                 if (npar != 1) { assert(false); }
                 if (nres >= 0) {
                     ValueObject vo;
-                    if (stack[1]->type == LUA_TSHRSTR) {
+                    if (stack[1]->type == LUA_TSTRING) {
                         char *valueEnd;
-                        const char *valueStr = ((String *) stack[1]->value.p)->toString();
+                        const char *valueStr = ((StringObject *) stack[1]->value.p)->toString();
                         double value;
                         value = strtod(valueStr, &valueEnd);
 
@@ -104,8 +104,8 @@ namespace Lua {
                 sprintf(result, "%s", "nil");
                 break;
 
-            case LUA_TSHRSTR:
-                result = (char *) ((String *) vo->value.p)->toString();
+            case LUA_TSTRING:
+                result = (char *) ((StringObject *) vo->value.p)->toString();
                 break;
 
             case LUA_TBOOLEAN:

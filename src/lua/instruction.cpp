@@ -13,7 +13,7 @@ namespace Lua {
         Lua::InstructionType type;
     };
 
-/// String to suppress C++11 warnings.
+/// StringObject to suppress C++11 warnings.
 /// Converting ENUM OpCode to string.
     static OpCodeInfo OpCodeInfoList[OPCODES_COUNT] = {
             OpCodeInfo("OP_MOVE", Lua::ABC),
