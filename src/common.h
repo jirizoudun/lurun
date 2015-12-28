@@ -3,14 +3,14 @@
 #define LURUN_COMMON_H
 
 #define VERBOSE 0
-#define DEBUG 0
+#define DEBUG VERBOSE
 
 #define MAX_FILENAME_LENGTH 128
 #define BUFFER_SIZE 1048576 //MB
 
 #define INSTRUCTION_SIZE 4
 
-
+#define LFIELDS_PER_FLUSH 50 // used in lists
 
 
 

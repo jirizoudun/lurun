@@ -8,7 +8,7 @@ namespace Lua {
     class Table {
 
         std::unordered_map<ValueObject,ValueObject,ValueObjectHasher> hash_part;
-        //ValueObject* array_part;
+        int len = 0;
 
     public:
 
@@ -19,6 +19,10 @@ namespace Lua {
         void set(const char * key, ValueObject value);
 
         ValueObject get(const ValueObject key) const;
+        std::pair<ValueObject,ValueObject> next(const ValueObject key);
+
+        void setLen(int);
+        int getLen() const;
 
         void print();
     };

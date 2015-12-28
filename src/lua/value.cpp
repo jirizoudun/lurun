@@ -1,12 +1,11 @@
-//
-// Created by Tomas on 15. 11. 2015.
-//
 
 #include "../common.h"
 
 namespace Lua {
 
-    ValueObject::ValueObject() {}
+    ValueObject::ValueObject() {
+        type = LUA_TNIL;
+    }
     ValueObject::ValueObject(bool b) {
         type = LUA_TBOOLEAN;
         value.b = b;
@@ -43,7 +42,8 @@ namespace Lua {
                 value.p = other.value.p;
                 break;
             default:
-                // TODO error
+                printf("Can't copy ValueObject\n");
+                assert(false);
                 break;
         }
     }
@@ -78,7 +78,6 @@ namespace Lua {
                 ((Native*)(value.p))->print();
                 break;
             default:
-                printf("???\n");
                 break;
         }
     }
@@ -103,6 +102,7 @@ namespace Lua {
                 sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());
                 return ptr;
             default:
+                printf("%i\n", type);
                 assert(false);
                 break;
         }
@@ -127,7 +127,8 @@ namespace Lua {
             case LUA_TTABLE:
             case LUA_TCLOSURE:
             case LUA_TNATIVE:
-                return (this == &other);
+                return (value.p == other.value.p);
+                // return (this == &other);
             default:
                 return false;
         }

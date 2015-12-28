@@ -10,13 +10,16 @@ namespace Lua {
         return type;
     }
 
+    // base_res needed for TFORCALL
+    void Native::call(ValueObject **stack, int npar, ValueObject **base_res, int nres) {
+        switch(this->type) {
 
-    void Native::call(ValueObject **stack, int npar, int nres) {
-        switch (this->type) {
-            //TODO: Fix npar, nres = -1 cases.
             case LUA_NAT_PRINT:
-                if (npar != 1 || nres != -1) { assert(false); }
-                printf("%s\n", stack[1]->toString());
+                assert(nres == -1);
+                for(int i=1; i<=npar; i++) {
+                    printf("%s", stack[i]->toString());
+                    printf(i+1 <= npar ? " " : "\n");
+                }
                 break;
 
             case LUA_NAT_ASSERT:
@@ -31,7 +34,7 @@ namespace Lua {
                     char *str = to_s(stack[1]);
                     for (int i = 0; i <= nres; i++) {
                         ValueObject *vo = new ValueObject(LUA_TSTRING, new StringObject(str));
-                        stack[i] = vo;
+                        base_res[i] = vo;
                     }
                     delete str;
                 }
@@ -50,8 +53,7 @@ namespace Lua {
                         if (valueStr != valueEnd) {
                             if (fabs(floor(value) - value) < 0.0001) {
                                 vo = ValueObject((long long int) value);
-                            }
-                            else {
+                            } else {
                                 vo = ValueObject(value);
                             }
                         }
@@ -69,7 +71,7 @@ namespace Lua {
 
                     for (int i = 0; i <= nres; i++) {
                         ValueObject *v = new ValueObject(vo);
-                        stack[i] = v;
+                        base_res[0] = v;
                     }
                 }
                 break;
@@ -82,17 +84,41 @@ namespace Lua {
                     ValueObject vo = t->get(*stack[2]);
 
                     for(int i = 0; i <= nres; i++) {
-                        stack[i] = new ValueObject(vo);
+                        base_res[i] = new ValueObject(vo);
                     }
                 }
                 break;
 
-            case LUA_NAT_RAWSET:
+            case LUA_NAT_RAWSET: {
                 if (npar != 3) { assert(false); }
                 if (stack[1]->type != LUA_TTABLE) { assert(false); }
 
                 Table *t = ((Table *) stack[1]->value.p);
                 t->set(*stack[2], *stack[3]);
+                break;
+            }
+
+            /**
+             * gets table and key
+             * returns next key and value
+             */
+            case LUA_NAT_NEXT: {
+                assert(npar == 2);
+                std::pair<ValueObject,ValueObject> res = ((Table*) stack[1]->value.p)->next(*stack[2]);
+
+                base_res[0] = new ValueObject(res.first);
+                base_res[1] = new ValueObject(res.second);
+                break;
+            }
+
+            /*
+             * gets table
+             * returns iterator function (next), table and stopping condition (nil)
+             */
+            case LUA_NAT_PAIRS:
+                assert(npar == 1);
+                base_res[0] = new ValueObject(env->get(ValueObject(LUA_TSTRING, new StringObject("next"))));
+                base_res[2] = new ValueObject();
                 break;
         }
     }

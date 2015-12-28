@@ -16,6 +16,8 @@
 #define LUA_TNATIVE     99
 
 #define IS_NUMERIC(type) ((type & 3) == 3)
+#define IS_INT(O) ((O).type == LUA_TNUMINT)
+#define IS_NIL(O) ((O).type == LUA_TNIL)
 
 namespace Lua {
 
@@ -61,8 +63,9 @@ namespace Lua {
                     return std::hash<long long>()(o.value.i);
                 case LUA_TSTRING:
                     return ((StringObject *)(o.value.p))->getHash();
-                default:
                 case LUA_TTABLE:
+                    return std::hash<long long>()((long long)o.value.p);
+                default:
                 case LUA_TCLOSURE:
                 case LUA_TNATIVE:
                     // NOT SUPPORTED

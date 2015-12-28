@@ -8,14 +8,15 @@ namespace VM {
 
     struct CallFrame {
         Closure *closure;
-        int top;
+        int top; // first free
         int base;
+        int size;
         CallFrame *prev;
 
         int npar;
         int nres;
 
-        CallFrame(CallFrame* prev, Closure* closure, int top, int base, int npar=0, int nres=0);
+        CallFrame(CallFrame* prev, Closure* closure, int base, int top, int npar=0, int nres=0);
         ~CallFrame();
     };
 }
