@@ -94,7 +94,7 @@ namespace Lua {
             case LUA_TNIL: return "nil";
             case LUA_TBOOLEAN: return value.b ? "true" : "false";
             case LUA_TNUMFLT:
-                sprintf(ptr, "%f", value.d);
+                sprintf(ptr, "%g", value.d);
                 return ptr;
             case LUA_TNUMINT:
                 sprintf(ptr, "%lli", value.i);
