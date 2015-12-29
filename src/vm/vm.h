@@ -24,6 +24,8 @@ namespace VM {
         bool cmp(T, U, OpCode);
 
         ValueObject getVO(ValueObject** stack, Function * proto, int R) const;
+
+        bool callM(CallFrame* ci, ValueObject B, ValueObject C, int RA, const char*);
     public:
         VM();
 

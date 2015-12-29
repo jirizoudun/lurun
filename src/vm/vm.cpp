@@ -321,31 +321,13 @@ namespace VM {
                             res = arithmetic(B.value.i, C.value.i, op);
                         }
                         stack[base + RA] = res;
-                    } else if (B.type == LUA_TTABLE) {
-                        Table* t = (Table*)B.value.p;
-                        Table* meta = t->metatable;
-
-                        ValueObject func = meta->get(ValueObject(LUA_TSTRING, new StringObject("__add")));
-                        if (IS_NIL(func)) {
+                    } else if (B.type == LUA_TTABLE || C.type == LUA_TTABLE) {
+                        // TODO other operations
+                        if (!callM(ci, B, C, RA, "__add")
+                         && !callM(ci, C, B, RA, "__add")) {
+                            printf("Can't invoke operation\n");
                             assert(false);
-                        } else {
-                            Closure*  nc = ((Closure*)(func.value.p));
-
-                            int newbase = ci->base + ci->size;
-                            stack[newbase]     = new ValueObject(B);
-                            stack[newbase + 1] = new ValueObject(C);
-
-                            topCallFrame = new CallFrame(ci, nc, newbase, newbase+2, 2, 1);
-                            execute(topCallFrame);
-
-                            stack[base + RA] = stack[topCallFrame->top];
-
-                            // return from call frame
-                            delete topCallFrame;
-                            topCallFrame = ci;
                         }
-                    } else if (C.type == LUA_TTABLE) {
-                        assert(false);
                     } else {
                         printf("Can't invoke arithmetic operation\n");
                         assert(false);
@@ -451,6 +433,34 @@ namespace VM {
         } else {
             return *(stack[R]);
         }
+    }
+
+    bool VM::callM(CallFrame* ci, ValueObject B, ValueObject C, int RA, const char* m) {
+
+        Table* meta = ((Table*)B.value.p)->metatable;
+        if (meta == NULL) { meta = ((Table*)C.value.p)->metatable; }
+        if (meta == NULL) { return false; }
+
+        ValueObject func = meta->get(ValueObject(LUA_TSTRING, new StringObject(m)));
+        if (IS_NIL(func)) {
+            return false;
+        } else {
+            Closure*  nc = ((Closure*)(func.value.p));
+
+            int newbase = ci->base + ci->size;
+            stack[newbase]     = new ValueObject(B);
+            stack[newbase + 1] = new ValueObject(C);
+
+            topCallFrame = new CallFrame(ci, nc, newbase, newbase+2, 2, 1);
+            execute(topCallFrame);
+
+            stack[ci->base + RA] = stack[topCallFrame->top];
+
+            // return from call frame
+            delete topCallFrame;
+            topCallFrame = ci;
+        }
+        return true;
     }
 
     ValueObject* VM::arithmetic(long long a, long long b, OpCode op) {
