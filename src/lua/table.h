@@ -12,6 +12,8 @@ namespace Lua {
 
     public:
 
+        Table* metatable = NULL;
+
         Table();
         Table(const Table& other);
 

@@ -75,6 +75,9 @@ namespace Lua {
         {
             case ABC:
                 printf("%d %d %d", this->args[0], this->args[1], this->args[2]);
+                if (ISK(args[2])) {
+                    printf(" ; K(%i)", INDEXK(args[2]));
+                }
                 break;
 
             case ABX:

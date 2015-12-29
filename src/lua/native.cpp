@@ -11,36 +11,44 @@ namespace Lua {
     }
 
     // base_res needed for TFORCALL
-    void Native::call(ValueObject **stack, int npar, ValueObject **base_res, int nres) {
+    int Native::call(ValueObject **stack, int npar, ValueObject **base_res, int nres) {
         switch(this->type) {
 
             case LUA_NAT_PRINT:
-                assert(nres == -1);
+                assert(nres == 0 && npar >= 1);
                 for(int i=1; i<=npar; i++) {
                     printf("%s", stack[i]->toString());
-                    printf(i+1 <= npar ? " " : "\n");
+                    printf(i+1 <= npar ? "\t" : "\n");
                 }
-                break;
+                return 0;
 
             case LUA_NAT_ASSERT:
-                if (npar != 1 && nres != 0) { assert(false); }
-                if (stack[1]->type != LUA_TBOOLEAN) { assert(false); }
-                assert(stack[1]->value.b);
-                break;
+                assert(npar == 1 && nres == 0);
+                assert(stack[1]->type != LUA_TNIL);
+                assert(stack[1]->type != LUA_TBOOLEAN || stack[1]->value.b);
+                return 0;
 
             case LUA_NAT_TOSTRING:
-                if (npar != 1) { assert(false); }
+                assert(npar == 1);
                 if (nres >= 0) {
+                    assert(false); // TODO check
+                    /*
+                    stack[1]->print();
                     char *str = to_s(stack[1]);
                     for (int i = 0; i <= nres; i++) {
                         ValueObject *vo = new ValueObject(LUA_TSTRING, new StringObject(str));
                         base_res[i] = vo;
                     }
                     delete str;
+                    */
+                } else {
+                    base_res[0] = new ValueObject(LUA_TSTRING, new StringObject(stack[1]->toString()));
+                    return 1;
                 }
                 break;
 
             case LUA_NAT_TONUMBER:
+                assert(false); // TODO check
                 if (npar != 1) { assert(false); }
                 if (nres >= 0) {
                     ValueObject vo;
@@ -60,14 +68,11 @@ namespace Lua {
                         else {
                             vo = ValueObject(LUA_TNIL, NULL);
                         }
-                    }
-                    else if (stack[1]->type == LUA_TNUMFLT || stack[1]->type == LUA_TNUMINT) {
+                    } else if (stack[1]->type == LUA_TNUMFLT || stack[1]->type == LUA_TNUMINT) {
                         vo = *stack[1];
-                    }
-                    else {
+                    } else {
                         vo = ValueObject(LUA_TNIL, NULL);
                     }
-
 
                     for (int i = 0; i <= nres; i++) {
                         ValueObject *v = new ValueObject(vo);
@@ -77,7 +82,7 @@ namespace Lua {
                 break;
 
             case LUA_NAT_RAWGET:
-                if (npar != 2) { assert(false); }
+                assert(npar == 2);
                 if (nres >= 0) {
                     if (stack[1]->type != LUA_TTABLE) { assert(false); }
                     Table *t = ((Table *) stack[1]->value.p);
@@ -86,16 +91,18 @@ namespace Lua {
                     for(int i = 0; i <= nres; i++) {
                         base_res[i] = new ValueObject(vo);
                     }
+                    return nres;
                 }
+                assert(false);
                 break;
 
             case LUA_NAT_RAWSET: {
-                if (npar != 3) { assert(false); }
+                 assert(npar == 3);
                 if (stack[1]->type != LUA_TTABLE) { assert(false); }
 
                 Table *t = ((Table *) stack[1]->value.p);
                 t->set(*stack[2], *stack[3]);
-                break;
+                return 0;
             }
 
             /**
@@ -108,7 +115,7 @@ namespace Lua {
 
                 base_res[0] = new ValueObject(res.first);
                 base_res[1] = new ValueObject(res.second);
-                break;
+                return 2;
             }
 
             /*
@@ -117,45 +124,35 @@ namespace Lua {
              */
             case LUA_NAT_PAIRS:
                 assert(npar == 1);
-                base_res[0] = new ValueObject(env->get(ValueObject(LUA_TSTRING, new StringObject("next"))));
+                base_res[0] = new ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_NEXT)));
                 base_res[2] = new ValueObject();
-                break;
+                return 3;
+
+            case LUA_NAT_GETMETATABLE: {
+                assert(npar == 1);
+                Table* metatable = ((Table*)stack[1]->value.p)->metatable;
+                if (metatable != NULL) {
+                    base_res[0] = new ValueObject(LUA_TTABLE, metatable);
+                }
+                return 1;
+            }
+            case LUA_NAT_SETMETATABLE: {
+                assert(npar == 2);
+                // TODO If the original metatable has a "__metatable" field, raise an error.
+
+                Table* t = (Table*)stack[1]->value.p;
+                if (IS_NIL(*stack[2])) {
+                    t->metatable = NULL;
+                } else {
+                    t->metatable = (Table*)stack[2]->value.p;
+                }
+                return 0;
+            }
+
+            default: {
+                assert(false);
+                return 0; // make compiler happy
+            }
         }
-    }
-
-    char *Native::to_s(const ValueObject *vo) {
-        char *result;
-        switch (vo->type) {
-            case LUA_TNIL:
-                sprintf(result, "%s", "nil");
-                break;
-
-            case LUA_TSTRING:
-                result = (char *) ((StringObject *) vo->value.p)->toString();
-                break;
-
-            case LUA_TBOOLEAN:
-                result = (char *) (vo->value.b ? "true" : "false");
-                break;
-
-            case LUA_TNUMINT:
-                sprintf(result, "%lld", vo->value.i);
-                break;
-
-            case LUA_TNUMFLT:
-                sprintf(result, "%f", vo->value.d);
-                break;
-
-            default:
-                sprintf(result, "%s", "");
-                //result = ""; //TODO: Functions, tables, etc
-                break;
-        }
-
-        char *dyn_result = new char[strlen(result) + 1];
-        memcpy(dyn_result, result, strlen(result) * sizeof(char));
-        dyn_result[strlen(result)] = 0;
-
-        return dyn_result;
     }
 }

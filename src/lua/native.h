@@ -14,6 +14,8 @@ typedef enum NATIVE_TYPE {
     LUA_NAT_RAWSET,
     LUA_NAT_NEXT,
     LUA_NAT_PAIRS,
+    LUA_NAT_GETMETATABLE,
+    LUA_NAT_SETMETATABLE,
 
     LUA_NAT_IO_OPEN = 100,
     LUA_NAT_IO_CLOSE,
@@ -22,18 +24,12 @@ typedef enum NATIVE_TYPE {
 
 namespace Lua {
     class Native {
-        //Type of native function
         NativeType type;
 
-        // Helper methods
-        char * to_s(const ValueObject* vo);
-
-        Table* env;
-
     public:
-        Native(int type, Table* env) : type((NativeType)type), env(env) {};
+        Native(int type) : type((NativeType)type) {};
 
-        void call(ValueObject**, int npar, ValueObject** base_res, int nres);
+        int call(ValueObject**, int npar, ValueObject** base_res, int nres);
 
         void print();
 

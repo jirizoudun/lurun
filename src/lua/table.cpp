@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 17. 11. 2015.
-//
 
 #include "../common.h"
 
@@ -55,12 +52,14 @@ namespace Lua {
     }
 
     void Table::print() {
-        printf("Table <%zu elements>\n", hash_part.size());
-        /*for (auto it = hash_part.begin(); it != hash_part.end(); ++it) {
+        printf("Table <%zu elements, mt: %i>\n", hash_part.size(), metatable != NULL);
+#if DEBUG_TABLE_CONTENTS
+        for (auto it = hash_part.begin(); it != hash_part.end(); ++it) {
             printf("\t");
             printf("[%i] ", (it->second).type);
             (it->first).print();
-        }*/
+        }
+#endif
     }
 
 }

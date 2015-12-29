@@ -117,7 +117,6 @@ namespace VM {
                 case OP_SETTABUP: { // UpValue[A][RK(B)] := RK(C)
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
-
                     ((Table *) (ci->closure->upvalues[RA]->getValue()->value.p))->set(B, C);
                     break;
                 }
@@ -171,6 +170,10 @@ namespace VM {
                         res = cmp<>((IS_INT(B) ? B.value.i : B.value.d),
                                     (IS_INT(C) ? C.value.i : C.value.d),
                                     op);
+                    } else if (B.type == LUA_TBOOLEAN || C.type == LUA_TBOOLEAN) {
+                        res = cmp<>(B.value.b, C.value.b, op);
+                    } else if (B.type == LUA_TNIL || C.type == LUA_TNIL) {
+                        res = cmp<>(B.type, C.type, op);
                     } else {
                         res = cmp<>(B.value.p, C.value.p, op);
                     }
@@ -192,26 +195,25 @@ namespace VM {
                      * so next open instruction (OP_CALL, OP_RETURN, OP_SETLIST) may use 'top'.
                      */
 
+                    int nres = RC - 1;
+                    int npar = RB - 1;
+
                     if (RB == 0) {
-                        RB = ci->top;
+                        npar = ci->top; // npar or RB?
                     }
 
                     RA = base + RA;
 
-                    int last_result = RC - 2;
-                    int last_param  = RB - 1;
-
-                    // If npar or nres == -1 then there's indeterminate number of parameters or results
-                    // example: print(tostring(false))
-
+                    int returned = nres;
                     if (stack[RA]->type == LUA_TNATIVE) {
-                        ((Native *) (stack[RA]->value.p))->call(stack + RA, last_param, stack + RA, last_result);
+                        returned = ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, stack + RA, nres);
                     } else {
                         Closure*  nc = ((Closure*)(stack[RA]->value.p));
                         Function* np = nc->proto;
 
-                        topCallFrame = new CallFrame(ci, nc, RA + 1, RA + last_param + 1, last_param, last_result);
+                        topCallFrame = new CallFrame(ci, nc, RA + 1, RA + npar + 1, npar, nres);
                         execute(topCallFrame);
+                        returned = topCallFrame->top;
 
                         // return from call frame
                         delete topCallFrame;
@@ -219,17 +221,14 @@ namespace VM {
                     }
 
                     if (RC == 0) {
-                        ci->top = RA + last_result + 2;
+                        ci->top = returned;
                     }
                     break;
                 }
 
                 case OP_TFORCALL: { // R(A+3), ... ,R(A+2+C) := R(A)(R(A+1), R(A+2));
                     int nres = RA + 2 + RC;
-                    //R5, .., R9 := R2(R3, R4)
-
                     RA = base + RA;
-
                     if (stack[RA]->type == LUA_TNATIVE) {
                         ((Native *) (stack[RA]->value.p))->call(stack + RA, 2, stack + RA + 3, nres);
                     } else {
@@ -243,7 +242,6 @@ namespace VM {
                     /* TODO
                      * In OP_RETURN, if (B == 0) then return up to 'top'.
                      */
-
                     if (RB == 0) {assert(false);}
 
                     // close upvalues
@@ -269,6 +267,8 @@ namespace VM {
                     for (int i = RA; i <= RA + RB - 2; i++) {
                         stack[R++] = stack[base + i];
                     }
+
+                    ci->top = RB - 1;
                     return;
                 }
                 case OP_MOVE: // RA = RB
@@ -289,9 +289,6 @@ namespace VM {
                     ValueObject B = getVO(stack+base, proto, RB);
                     ValueObject C = getVO(stack+base, proto, RC);
 
-                    //B.print();
-                    //C.print();
-
                     ((Table*)(stack[base + RA]->value.p))->set(B, C);
                     break;
                 }
@@ -306,26 +303,54 @@ namespace VM {
                     break;
                 }
 
-                case OP_ADD: case OP_SUB: {
+                case OP_ADD: case OP_SUB: case OP_MUL: {
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
 
-                    assert(IS_NUMERIC(B.type) && IS_NUMERIC(C.type));
                     ValueObject * res;
-
-                    if (B.type == LUA_TNUMFLT && C.type == LUA_TNUMFLT) {
-                        res = arithmetic(B.value.d, C.value.d, op);
-                    } else if (B.type == LUA_TNUMFLT || C.type == LUA_TNUMFLT) {
-                        if (B.type == LUA_TNUMINT) {
-                            res = arithmetic((double)B.value.i, C.value.d, op);
+                    if ((IS_NUMERIC(B.type) && IS_NUMERIC(C.type))) {
+                        if (B.type == LUA_TNUMFLT && C.type == LUA_TNUMFLT) {
+                            res = arithmetic(B.value.d, C.value.d, op);
+                        } else if (B.type == LUA_TNUMFLT || C.type == LUA_TNUMFLT) {
+                            if (B.type == LUA_TNUMINT) {
+                                res = arithmetic((double)B.value.i, C.value.d, op);
+                            } else {
+                                res = arithmetic(B.value.d, (double)C.value.i, op);
+                            }
                         } else {
-                            res = arithmetic(B.value.d, (double)C.value.i, op);
+                            res = arithmetic(B.value.i, C.value.i, op);
                         }
+                    } else if (B.type == LUA_TTABLE) {
+                        Table* t = (Table*)B.value.p;
+                        Table* meta = t->metatable;
+
+                        ValueObject func = meta->get(ValueObject(LUA_TSTRING, new StringObject("__add")));
+                        if (IS_NIL(func)) {
+                            assert(false);
+                        } else {
+                            Closure*  nc = ((Closure*)(func.value.p));
+                            Function* np = nc->proto;
+
+                            int newbase = ci->base + ci->size;
+                            stack[newbase]     = new ValueObject(B);
+                            stack[newbase + 1] = new ValueObject(C);
+
+                            topCallFrame = new CallFrame(ci, nc, newbase, newbase+2, 2, 1);
+                            execute(topCallFrame);
+
+                            // return from call frame
+                            delete topCallFrame;
+                            topCallFrame = ci;
+                        }
+                    } else if (C.type == LUA_TTABLE) {
+                        assert(false);
                     } else {
-                        res = arithmetic(B.value.i, C.value.i, op);
+                        printf("Can't invoke arithmetic operation\n");
+                        assert(false);
                     }
 
                     stack[base + RA] = res;
+                    ci->top--;
                     break;
                 }
 
@@ -353,14 +378,15 @@ namespace VM {
                     ValueObject* step  = stack[base + RA + 2];
 
                     if (start->type == LUA_TNUMINT && limit->type == LUA_TNUMINT && step->type == LUA_TNUMINT) {
-                        long long istart = start->value.i + step->value.i;
+                        long long istart = start->value.i;
                         long long ilimit = limit->value.i;
-                        start->value.i = istart;
 
-                        if (istart < ilimit) {
+
+                        if (istart <= ilimit) {
                             ip += RB;
                             stack[base + RA + 3] = new ValueObject(*start);
                         }
+                        start->value.i = start->value.i + step->value.i;
 
                     // float
                     } else {
@@ -397,6 +423,15 @@ namespace VM {
                     break;
                 }
 
+                case OP_SELF: { // R(A+1) := R(B); R(A) := R(B)[RK(C)]
+
+                    ValueObject C = getVO(stack + base, proto, RC);
+
+                    stack[base + RA + 1] = new ValueObject(*stack[base + RB]);
+                    stack[base + RA] = new ValueObject(((Table*)stack[base + RB]->value.p)->get(C));
+                    break;
+                }
+
                 default:
                     printf("unknown inst\n");
                     inst->print();
@@ -404,7 +439,7 @@ namespace VM {
                     break;
             }
 
-#if DEBUG
+#if DEBUG_STACK
             printStack(ci); // ; debug
 #endif
         }
@@ -424,6 +459,7 @@ namespace VM {
         switch(op) {
             case OP_ADD: res = a + b; break;
             case OP_SUB: res = a - b; break;
+            case OP_MUL: res = a * b; break;
             default:
                 printf("unknown arithmetic op");
                 assert(false);
@@ -435,6 +471,7 @@ namespace VM {
         switch(op) {
             case OP_ADD: res = a + b; break;
             case OP_SUB: res = a - b; break;
+            case OP_MUL: res = a * b; break;
             default:
                 printf("unknown arithmetic op");
                 assert(false);

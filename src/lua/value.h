@@ -55,6 +55,8 @@ namespace Lua {
     struct ValueObjectHasher {
         size_t operator()(const ValueObject& o) const {
             switch (o.type) {
+                case LUA_TNIL:
+                    return std::hash<void*>()(NULL);
                 case LUA_TBOOLEAN:
                     return std::hash<bool>()(o.value.b);
                 case LUA_TNUMFLT:

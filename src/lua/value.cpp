@@ -42,7 +42,7 @@ namespace Lua {
                 value.p = other.value.p;
                 break;
             default:
-                printf("Can't copy ValueObject\n");
+                printf("Can't copy ValueObject [%i]\n", type);
                 assert(false);
                 break;
         }
@@ -101,8 +101,11 @@ namespace Lua {
             case LUA_TNATIVE:
                 sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());
                 return ptr;
+            case LUA_TCLOSURE:
+                sprintf(ptr, "Closure[%d]", ((Native*)(value.p))->getType());
+                return ptr;
             default:
-                printf("%i\n", type);
+                printf("Can't convert to string  type %i\n", type);
                 assert(false);
                 break;
         }
