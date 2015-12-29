@@ -15,5 +15,5 @@ function h(x) print(x.key1) end
 h{key1 = 'Sonmi~451'}  -- Prints 'Sonmi~451'.
 
 for key, val in pairs(u) do  -- Table iteration.
-  print(key, val)
+  print(type(key), val)
 end
