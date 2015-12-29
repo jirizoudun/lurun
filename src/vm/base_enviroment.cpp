@@ -22,6 +22,7 @@ namespace BaseEnv {
         Table *io = new Table();
         io->set("write", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_IO_WRITE))));
 //        io->set("open", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_IO_OPEN))));
+        env->set("io", ValueObject(LUA_TTABLE, io));
     }
 
     void initEnviroment(Table *env) {

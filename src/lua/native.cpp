@@ -30,22 +30,9 @@ namespace Lua {
 
             case LUA_NAT_TOSTRING:
                 assert(npar == 1);
-                if (nres >= 0) {
-                    assert(false); // TODO check
-                    /*
-                    stack[1]->print();
-                    char *str = to_s(stack[1]);
-                    for (int i = 0; i <= nres; i++) {
-                        ValueObject *vo = new ValueObject(LUA_TSTRING, new StringObject(str));
-                        base_res[i] = vo;
-                    }
-                    delete str;
-                    */
-                } else {
-                    base_res[0] = new ValueObject(LUA_TSTRING, new StringObject(stack[1]->toString()));
-                    return 1;
-                }
-                break;
+                assert(nres == -1 || nres == 1);
+                base_res[0] = new ValueObject(LUA_TSTRING, new StringObject(stack[1]->toString()));
+                return 1;
 
             case LUA_NAT_TONUMBER:
                 assert(false); // TODO check
@@ -148,6 +135,14 @@ namespace Lua {
                 }
                 return 0;
             }
+
+            case LUA_NAT_IO_WRITE:
+                assert(nres == 0 && npar >= 1);
+                for(int i=1; i<=npar; i++) {
+                    printf("%s", stack[i]->toString());
+                    printf(i+1 <= npar ? "\t" : "");
+                }
+                return 0;
 
             default: {
                 assert(false);

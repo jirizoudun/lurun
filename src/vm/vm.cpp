@@ -199,21 +199,21 @@ namespace VM {
                     int npar = RB - 1;
 
                     if (RB == 0) {
-                        npar = ci->top; // npar or RB?
+                        npar = ci->top - base - RA - 1; // npar or RB?
                     }
 
                     RA = base + RA;
 
-                    int returned = nres;
+                    int top = nres;
                     if (stack[RA]->type == LUA_TNATIVE) {
-                        returned = ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, stack + RA, nres);
+                        top = RA - 1 + ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, stack + RA, nres);
                     } else {
                         Closure*  nc = ((Closure*)(stack[RA]->value.p));
                         Function* np = nc->proto;
 
                         topCallFrame = new CallFrame(ci, nc, RA + 1, RA + npar + 1, npar, nres);
                         execute(topCallFrame);
-                        returned = topCallFrame->top;
+                        top = topCallFrame->top;
 
                         // return from call frame
                         delete topCallFrame;
@@ -221,7 +221,7 @@ namespace VM {
                     }
 
                     if (RC == 0) {
-                        ci->top = returned;
+                        ci->top = top + 1;
                     }
                     break;
                 }
@@ -268,7 +268,7 @@ namespace VM {
                         stack[R++] = stack[base + i];
                     }
 
-                    ci->top = RB - 1;
+                    ci->top = R - 1;
                     return;
                 }
                 case OP_MOVE: // RA = RB

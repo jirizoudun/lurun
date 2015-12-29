@@ -97,7 +97,8 @@ namespace Lua {
             case LUA_TSTRING:
                 return ((StringObject *)(value.p))->toString();
             case LUA_TTABLE:
-                return "<Table>";
+                sprintf(ptr, "Table [%d]", ((Native*)(value.p))->getType());
+                return ptr;
             case LUA_TNATIVE:
                 sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());
                 return ptr;
