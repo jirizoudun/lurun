@@ -320,6 +320,7 @@ namespace VM {
                         } else {
                             res = arithmetic(B.value.i, C.value.i, op);
                         }
+                        stack[base + RA] = res;
                     } else if (B.type == LUA_TTABLE) {
                         Table* t = (Table*)B.value.p;
                         Table* meta = t->metatable;
@@ -329,7 +330,6 @@ namespace VM {
                             assert(false);
                         } else {
                             Closure*  nc = ((Closure*)(func.value.p));
-                            Function* np = nc->proto;
 
                             int newbase = ci->base + ci->size;
                             stack[newbase]     = new ValueObject(B);
@@ -337,6 +337,8 @@ namespace VM {
 
                             topCallFrame = new CallFrame(ci, nc, newbase, newbase+2, 2, 1);
                             execute(topCallFrame);
+
+                            stack[base + RA] = stack[topCallFrame->top];
 
                             // return from call frame
                             delete topCallFrame;
@@ -348,9 +350,6 @@ namespace VM {
                         printf("Can't invoke arithmetic operation\n");
                         assert(false);
                     }
-
-                    stack[base + RA] = res;
-                    ci->top--;
                     break;
                 }
 
