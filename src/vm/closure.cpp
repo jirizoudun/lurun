@@ -7,5 +7,6 @@ namespace VM {
     {}
 
     Closure::~Closure() {
+        // DO NOT DELETE PROTO
     }
 }

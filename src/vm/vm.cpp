@@ -29,7 +29,7 @@ namespace VM {
         lastUpval = new UpvalueRef(stack, NULL); // new upvalue from _ENV table
 
         // create call frame
-        Closure * baseClosure = new Closure(initialChunk);
+        Closure * baseClosure = new Closure(initialChunk); // FIXME this is leaking
         baseClosure->upvalues.push_back(lastUpval);
 
         topCallFrame = new CallFrame(NULL, baseClosure, 1, 2);
@@ -37,6 +37,11 @@ namespace VM {
 
     void VM::run() {
         execute(topCallFrame);
+
+        // delete initial frame, it's closure and _ENV as upValue
+        delete topCallFrame->closure;
+        delete topCallFrame;
+        delete lastUpval;
     }
 
     void VM::execute(CallFrame * ci) {
@@ -272,8 +277,8 @@ namespace VM {
                     stack[base + RA] = stack[base + RB];
                     break;
                 case OP_CONCAT: { // R(A) := R(B).. ... ..R(C)
-                    const char *B = stack[base + RB].toString();
-                    const char *C = stack[base + RC].toString();
+                    string B = stack[base + RB].toString();
+                    string C = stack[base + RC].toString();
 
                     string* concat = new string(B);
                     concat->append(C);

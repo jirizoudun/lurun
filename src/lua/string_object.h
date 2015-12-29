@@ -13,6 +13,7 @@ namespace Lua {
 
         void compute_hash();
     public:
+        StringObject(string str);
         StringObject(string* str);
         StringObject(const char* str);
         StringObject(const StringObject & other);

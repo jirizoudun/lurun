@@ -17,7 +17,7 @@ namespace Lua {
             case LUA_NAT_PRINT:
                 assert(nres == 0 && npar >= 1);
                 for(int i=1; i<=npar; i++) {
-                    printf("%s", stack[i].toString());
+                    printf("%s", stack[i].toString().c_str());
                     printf(i+1 <= npar ? "\t" : "\n");
                 }
                 return 0;
@@ -159,7 +159,7 @@ namespace Lua {
             case LUA_NAT_IO_WRITE:
                 assert(nres == 0 && npar >= 1);
                 for(int i=1; i<=npar; i++) {
-                    printf("%s", stack[i].toString());
+                    printf("%s", stack[i].toString().c_str());
                     printf(i+1 <= npar ? "\t" : "");
                 }
                 return 0;

@@ -26,6 +26,12 @@ namespace Lua {
         delete func_name;
         delete code;
         delete constants;
+        delete upvaluesdescs;
+
+        for (std::vector<Function*>::iterator it = protos->begin(); it != protos->end(); ++it) {
+            delete *it;
+        }
+        delete protos;
     }
 
     void Function::print() {

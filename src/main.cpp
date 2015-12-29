@@ -217,5 +217,8 @@ int main(int argc, char **argv) {
 #endif
     vm.run();
 
+    delete reader;
+    delete f;
+
     return 0;
 }

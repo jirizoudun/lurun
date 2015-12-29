@@ -8,6 +8,10 @@ namespace Lua {
 
     using std::string;
 
+    StringObject::StringObject(string str) {
+        this->str = new string(str);
+        compute_hash();
+    }
     StringObject::StringObject(string* str) {
         this->str = str;
         compute_hash();
@@ -21,7 +25,7 @@ namespace Lua {
         compute_hash();
     }
     StringObject::~StringObject() {
-        delete [] str;
+        delete str;
     }
 
     void StringObject::compute_hash() {

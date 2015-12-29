@@ -88,33 +88,30 @@ namespace Lua {
     }
 
 
-    const char* ValueObject::toString() const {
+    const string ValueObject::toString() const {
+
+        switch(type) {
+            case LUA_TNIL:     return string("nil");
+            case LUA_TBOOLEAN: return string(value.b ? "true" : "false");
+            case LUA_TSTRING:  return ((StringObject *)(value.p))->getString();
+        }
+
         char * ptr = new char[50]; // TODO magic constant
         switch(type) {
-            case LUA_TNIL: return "nil";
-            case LUA_TBOOLEAN: return value.b ? "true" : "false";
-            case LUA_TNUMFLT:
-                sprintf(ptr, "%g", value.d);
-                return ptr;
-            case LUA_TNUMINT:
-                sprintf(ptr, "%lli", value.i);
-                return ptr;
-            case LUA_TSTRING:
-                return ((StringObject *)(value.p))->toString();
-            case LUA_TTABLE:
-                sprintf(ptr, "Table [%d]", ((Native*)(value.p))->getType());
-                return ptr;
-            case LUA_TNATIVE:
-                sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());
-                return ptr;
-            case LUA_TCLOSURE:
-                sprintf(ptr, "Closure[%d]", ((Native*)(value.p))->getType());
-                return ptr;
+            case LUA_TNUMFLT:  sprintf(ptr, "%g", value.d); break;
+            case LUA_TNUMINT:  sprintf(ptr, "%lli", value.i); break;
+            case LUA_TTABLE:   sprintf(ptr, "Table [%d]", ((Native*)(value.p))->getType());   break;
+            case LUA_TNATIVE:  sprintf(ptr, "Native [%d]", ((Native*)(value.p))->getType());  break;
+            case LUA_TCLOSURE: sprintf(ptr, "Closure [%d]", ((Native*)(value.p))->getType()); break;
             default:
                 printf("Can't convert to string  type %i\n", type);
                 assert(false);
                 break;
         }
+
+        string res = string(ptr);
+        delete [] ptr;
+        return res;
     }
 
 

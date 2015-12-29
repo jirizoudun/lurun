@@ -35,7 +35,7 @@ Function* Reader::readFile() {
 
 Function* Reader::readFunction() {
 
-    StringObject *                 name        = readString(); // source name?
+    StringObject *          name        = readString(); // source name?
     int                     line_first  = readInt(); // line defined
     int                     line_last   = readInt(); // lastlinedefined
     byte                    num_params  = readByte(); // numparams
@@ -43,7 +43,7 @@ Function* Reader::readFunction() {
     byte                    max_stack   = readByte(); // maxstacksize
     InstructionList*        code        = readCode(); // code
     Container<ValueObject>* constants   = readConstants(); // constants
-    Container<UpvalueDesc>*     upvalues    = readUpvalues(); // upvalues
+    Container<UpvalueDesc>* upvalues    = readUpvalues(); // upvalues
     std::vector<Function*>* protos      = readProtos(); // protos
     readDebug();
 
@@ -94,7 +94,9 @@ StringObject * Reader::readString() {
         }
         str[len-1] = '\0';
 
-        return new StringObject(str);
+        StringObject* so = new StringObject(str);
+        delete [] str;
+        return so;
     }
 }
 
@@ -170,13 +172,13 @@ void Reader::readDebug() {
 
     cnt = readInt();
     for (int i=0; i<cnt; i++) {
-        readString();
+        delete readString();
         readInt();
         readInt();
     }
 
     cnt = readInt();
     for (int i=0; i<cnt; i++) {
-        readString();
+        delete readString();
     }
 }
