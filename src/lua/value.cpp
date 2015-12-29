@@ -48,6 +48,11 @@ namespace Lua {
         }
     }
 
+    ValueObject& ValueObject::operator=(const ValueObject& other) {
+        type = other.type;
+        value = other.value;
+    }
+
     ValueObject::~ValueObject() { // TODO dynamic objects are deallocated by GC
     }
 

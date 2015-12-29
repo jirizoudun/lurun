@@ -7,6 +7,7 @@
 
 typedef enum NATIVE_TYPE {
     LUA_NAT_PRINT = 0,
+    LUA_NAT_TYPE,
     LUA_NAT_ASSERT,
     LUA_NAT_TOSTRING,
     LUA_NAT_TONUMBER,
@@ -29,7 +30,7 @@ namespace Lua {
     public:
         Native(int type) : type((NativeType)type) {};
 
-        int call(ValueObject**, int npar, ValueObject** base_res, int nres);
+        int call(ValueObject*, int npar, ValueObject* base_res, int nres);
 
         void print();
 

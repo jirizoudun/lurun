@@ -25,11 +25,11 @@ namespace Lua {
      */
     struct UpvalueRef {
 
-        UpvalueRef(ValueObject** ptr, UpvalueRef* next);
+        UpvalueRef(ValueObject* ptr, UpvalueRef* next);
         UpvalueRef(ValueObject vo, UpvalueRef* next);
 
         /** either points to stack or to it's own ValueObject when closed */
-        ValueObject** voPointer;
+        ValueObject* voPointer;
 
         /** ValueObject used when UpvalueRef is closed */
         ValueObject value;
@@ -38,7 +38,7 @@ namespace Lua {
         UpvalueRef * next;
         UpvalueRef * prev;
 
-        ValueObject* getValue();
+        ValueObject getValue();
 
         void close();
     };

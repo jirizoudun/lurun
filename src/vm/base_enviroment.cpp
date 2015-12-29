@@ -7,6 +7,7 @@ namespace BaseEnv {
     void initBaseFunctions(Table *env) {
         env->set("_G", ValueObject(LUA_TTABLE, (void *) env));
         env->set("print", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_PRINT))));
+        env->set("type", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_TYPE))));
         env->set("assert", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_ASSERT))));
         env->set("tonumber", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_TONUMBER))));
         env->set("tostring", ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_TOSTRING))));

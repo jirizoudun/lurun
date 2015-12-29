@@ -4,11 +4,14 @@
 
 #include "../lua/table.h"
 
+// get pointer from value in stack
+#define sgetptr(R) (VO_P(stack[R]))
+
 namespace VM {
 
     class VM {
 
-        Lua::ValueObject* stack[VM_STACK_SIZE];
+        Lua::ValueObject stack[VM_STACK_SIZE];
 
         Lua::UpvalueRef * lastUpval;
 
@@ -17,13 +20,13 @@ namespace VM {
         void initEnviroment(Lua::Table *env);
         void execute(CallFrame*);
 
-        ValueObject* arithmetic(long long, long long, OpCode);
-        ValueObject* arithmetic(double, double, OpCode);
+        ValueObject arithmetic(long long, long long, OpCode);
+        ValueObject arithmetic(double, double, OpCode);
 
         template <class T, class U>
         bool cmp(T, U, OpCode);
 
-        ValueObject getVO(ValueObject** stack, Function * proto, int R) const;
+        ValueObject getVO(ValueObject* stack, Function * proto, int R) const;
 
         bool callM(CallFrame* ci, ValueObject B, ValueObject C, int RA, const char*);
     public:

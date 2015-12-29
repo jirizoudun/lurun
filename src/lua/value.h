@@ -15,9 +15,19 @@
 #define LUA_TCLOSURE    6
 #define LUA_TNATIVE     99
 
-#define IS_NUMERIC(type) ((type & 3) == 3)
+#define IS_NUMERIC(O) ((((O).type) & 3) == 3)
 #define IS_INT(O) ((O).type == LUA_TNUMINT)
 #define IS_NIL(O) ((O).type == LUA_TNIL)
+#define IS_BOOL(O) ((O).type == LUA_TBOOLEAN)
+#define IS_TABLE(O) ((O).type == LUA_TTABLE)
+#define IS_NATIVE(O) ((O).type == LUA_TNATIVE)
+#define IS_STRING(O) ((O).type == LUA_TSTRING)
+#define IS_CLOSURE(O) ((O).type == LUA_TCLOSURE)
+
+#define VO_P(VO) ((VO).value.p)
+#define VO_I(VO) ((VO).value.i)
+#define VO_D(VO) ((VO).value.d)
+#define VO_B(VO) ((VO).value.b)
 
 namespace Lua {
 
@@ -43,7 +53,7 @@ namespace Lua {
         ValueObject(int type, void* ptr);
 
         ValueObject(const ValueObject&);
-        //ValueObject& operator= (const ValueObject& other);
+        ValueObject& operator= (const ValueObject& other);
 
         ~ValueObject();
         void print() const;

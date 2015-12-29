@@ -25,7 +25,7 @@ namespace VM {
         initEnviroment(_ENV);
 
         // create upvalue from environment
-        stack[0] = new ValueObject(LUA_TTABLE, (void *)_ENV);
+        stack[0] = ValueObject(LUA_TTABLE, (void *)_ENV);
         lastUpval = new UpvalueRef(stack, NULL); // new upvalue from _ENV table
 
         // create call frame
@@ -47,9 +47,8 @@ namespace VM {
         int params = ci->npar;
 
         // clear stack
-        ValueObject* nilPtr = new ValueObject(); // TODO no need to create new ptr each time
         for (int R=base+params; R < ci->base + ci->size; R++) {
-            stack[R] = nilPtr;
+            stack[R].type = LUA_TNIL;
         }
         //
 
@@ -80,7 +79,7 @@ namespace VM {
                         // upvalue refers to local variable of enclosing function
                         if (instack) {
 
-                            ValueObject ** ptr = stack + base + idx;
+                            ValueObject * ptr = stack + base + idx;
 
                             // find upval
                             UpvalueRef * upval = lastUpval;
@@ -104,20 +103,20 @@ namespace VM {
                         }
                     }
 
-                    (stack+base)[RA] = new ValueObject(LUA_TCLOSURE, (void*)newClosure);
+                    (stack+base)[RA] = ValueObject(LUA_TCLOSURE, (void*)newClosure);
                     break;
                 }
                 case OP_GETTABUP: { // R(A) := UpValue[B][RK(C)]
                     ValueObject C = getVO(stack + base, proto, RC);
-                    Table* t = (Table*)(ci->closure->upvalues[RB]->getValue()->value.p);
+                    Table* t = (Table*)VO_P(ci->closure->upvalues[RB]->getValue());
 
-                    stack[base + RA] = new ValueObject(t->get(C));
+                    stack[base + RA] = ValueObject(t->get(C));
                     break;
                 }
                 case OP_SETTABUP: { // UpValue[A][RK(B)] := RK(C)
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
-                    ((Table *) (ci->closure->upvalues[RA]->getValue()->value.p))->set(B, C);
+                    ((Table *)VO_P(ci->closure->upvalues[RA]->getValue()))->set(B, C);
                     break;
                 }
                 case OP_GETUPVAL:
@@ -126,24 +125,24 @@ namespace VM {
 
                 case OP_LOADNIL: // R(A), R(A+1), ..., R(A+B) := nil
                     for (int R=base + RA; R<=base + RA + RB; R++) {
-                        stack[R] = new ValueObject();
+                        stack[R].type = LUA_TNIL;
                     }
                     break;
 
                 case OP_SETUPVAL: { // UpValue[B] := R(A)
                     UpvalueRef *upv = ci->closure->upvalues[RB];
                     if (upv->voPointer == NULL) {
-                        upv->value = *stack[base + RA];
+                        upv->value = stack[base + RA];
                     } else {
                         upv->voPointer = stack + base + RA;
                     }
                     break;
                 }
                 case OP_LOADK:
-                    stack[base + RA] = new ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
+                    stack[base + RA] = ValueObject(proto->constants->get(RB)); // TODO refactor the shit out of this fugliness
                     break;
                 case OP_LOADBOOL:
-                    stack[base + RA] = new ValueObject((bool)RB);
+                    stack[base + RA] = ValueObject((bool)RB);
                     if(RC != 0) { ip++; } //TODO: Check this
                     break;
 
@@ -166,7 +165,7 @@ namespace VM {
 
                     if (B.type == LUA_TSTRING && C.type == LUA_TSTRING) {
                         res = cmp<>(((StringObject*)B.value.p)->getString(), ((StringObject*)C.value.p)->getString(), op);
-                    } else if (IS_NUMERIC(B.type) && IS_NUMERIC(C.type)) {
+                    } else if (IS_NUMERIC(B) && IS_NUMERIC(C)) {
                         res = cmp<>((IS_INT(B) ? B.value.i : B.value.d),
                                     (IS_INT(C) ? C.value.i : C.value.d),
                                     op);
@@ -183,9 +182,9 @@ namespace VM {
                 }
 
                 case OP_TEST: { // if not (R(A) <=> C) then pc++
-                    ValueObject* A = stack[base + RA];
-                    bool isFalse = (A->type == LUA_TNIL || (A->type == LUA_TBOOLEAN && !A->value.b));
-                    if ((RC && isFalse) || (!RC && !isFalse)) {++ip;}
+                    ValueObject A = stack[base + RA];
+                    bool isFalse = (IS_NIL(A) || (IS_BOOL(A) && !A.value.b));
+                    if (RC == isFalse) {++ip;}
                     break;
                 }
 
@@ -204,13 +203,11 @@ namespace VM {
 
                     RA = base + RA;
 
-                    int top = nres;
-                    if (stack[RA]->type == LUA_TNATIVE) {
-                        top = RA - 1 + ((Native *) (stack[RA]->value.p))->call(stack + RA, npar, stack + RA, nres);
+                    int top;
+                    if (IS_NATIVE(stack[RA])) {
+                        top = RA - 1 + ((Native *) (stack[RA].value.p))->call(stack + RA, npar, stack + RA, nres);
                     } else {
-                        Closure*  nc = ((Closure*)(stack[RA]->value.p));
-                        Function* np = nc->proto;
-
+                        Closure*  nc = ((Closure*)sgetptr(RA));
                         topCallFrame = new CallFrame(ci, nc, RA + 1, RA + npar + 1, npar, nres);
                         execute(topCallFrame);
                         top = topCallFrame->top;
@@ -229,8 +226,8 @@ namespace VM {
                 case OP_TFORCALL: { // R(A+3), ... ,R(A+2+C) := R(A)(R(A+1), R(A+2));
                     int nres = RA + 2 + RC;
                     RA = base + RA;
-                    if (stack[RA]->type == LUA_TNATIVE) {
-                        ((Native *) (stack[RA]->value.p))->call(stack + RA, 2, stack + RA + 3, nres);
+                    if (IS_NATIVE(stack[RA])) {
+                        ((Native *) (stack[RA].value.p))->call(stack + RA, 2, stack + RA + 3, nres);
                     } else {
                         printf("Can't TFORCALL Lua function");
                         assert(false);
@@ -239,16 +236,16 @@ namespace VM {
                 }
 
                 case OP_RETURN: { /* return R(A), ... ,R(A+B-2) */
-                    /* TODO
-                     * In OP_RETURN, if (B == 0) then return up to 'top'.
-                     */
-                    if (RB == 0) {assert(false);}
+                    if (RB == 0) {
+                        // TODO if (B == 0) then return up to 'top'.
+                        assert(false);
+                    }
 
                     // close upvalues
                     for(int R = base; R < base+ci->size; R++) { // TODO ci->size or ci->top?
-                        if (stack[R] == NULL || stack[R]->type != LUA_TCLOSURE) {continue;}
+                        if (!IS_CLOSURE(stack[R])) {continue;} // stack[R] == NULL ||
 
-                        Closure * clClosure = (Closure*)stack[R]->value.p;
+                        Closure * clClosure = (Closure*)sgetptr(R);
                         Function* clProto = clClosure->proto;
                         for(int i = 0; i < clProto->upvaluesdescs->count; i++) {
 
@@ -275,13 +272,13 @@ namespace VM {
                     stack[base + RA] = stack[base + RB];
                     break;
                 case OP_CONCAT: { // R(A) := R(B).. ... ..R(C)
-                    const char *B = stack[base + RB]->toString();
-                    const char *C = stack[base + RC]->toString();
+                    const char *B = stack[base + RB].toString();
+                    const char *C = stack[base + RC].toString();
 
                     string* concat = new string(B);
                     concat->append(C);
 
-                    stack[base + RA] = new ValueObject(LUA_TSTRING, new StringObject(concat));
+                    stack[base + RA] = ValueObject(LUA_TSTRING, new StringObject(concat));
                     break;
                 }
 
@@ -289,17 +286,17 @@ namespace VM {
                     ValueObject B = getVO(stack+base, proto, RB);
                     ValueObject C = getVO(stack+base, proto, RC);
 
-                    ((Table*)(stack[base + RA]->value.p))->set(B, C);
+                    ((Table*)sgetptr(base+RA))->set(B, C);
                     break;
                 }
                 case OP_NEWTABLE: {
-                    // TODO sizes from RB, RC
-                    stack[base + RA] = new ValueObject(LUA_TTABLE, new Table());
+                    // TODO sizes from RB, RC to optimize memory and speed
+                    stack[base + RA] = ValueObject(LUA_TTABLE, new Table());
                     break;
                 }
                 case OP_GETTABLE: { // R(A) := R(B)[RK(C)]
                     ValueObject C = getVO(stack+base, proto, RC);
-                    stack[base + RA] = new ValueObject(((Table*)(stack[base + RB]->value.p))->get(C));
+                    stack[base + RA] = ValueObject(((Table*)sgetptr(base + RB))->get(C));
                     break;
                 }
 
@@ -307,8 +304,8 @@ namespace VM {
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
 
-                    ValueObject * res;
-                    if ((IS_NUMERIC(B.type) && IS_NUMERIC(C.type))) {
+                    ValueObject res;
+                    if ((IS_NUMERIC(B) && IS_NUMERIC(C))) {
                         if (B.type == LUA_TNUMFLT && C.type == LUA_TNUMFLT) {
                             res = arithmetic(B.value.d, C.value.d, op);
                         } else if (B.type == LUA_TNUMFLT || C.type == LUA_TNUMFLT) {
@@ -337,13 +334,13 @@ namespace VM {
 
                 case OP_FORPREP: { // R(A)-=R(A+2); pc+=sBx
 
-                    ValueObject* start = stack[base + RA];
-                    ValueObject* limit = stack[base + RA + 1];
-                    ValueObject* step  = stack[base + RA + 2];
+                    ValueObject start = stack[base + RA];
+                    ValueObject limit = stack[base + RA + 1];
+                    ValueObject step  = stack[base + RA + 2];
 
                     // TODO should check limits here
 
-                    if (!(IS_NUMERIC(start->type) && IS_NUMERIC(limit->type) && IS_NUMERIC(step->type))) {
+                    if (!IS_NUMERIC(start) || !IS_NUMERIC(limit) || !IS_NUMERIC(step)) {
                         printf("Loop control must have numeric attributes\n");
                         assert(false);
                     }
@@ -354,20 +351,19 @@ namespace VM {
 
                 case OP_FORLOOP: { // R(A) += R(A+2); if R(A) <?= R(A+1) then { pc+=sBx; R(A+3)=R(A) }
 
-                    ValueObject* start = stack[base + RA];
-                    ValueObject* limit = stack[base + RA + 1];
-                    ValueObject* step  = stack[base + RA + 2];
+                    ValueObject start = stack[base + RA];
+                    ValueObject limit = stack[base + RA + 1];
+                    ValueObject step  = stack[base + RA + 2];
 
-                    if (start->type == LUA_TNUMINT && limit->type == LUA_TNUMINT && step->type == LUA_TNUMINT) {
-                        long long istart = start->value.i;
-                        long long ilimit = limit->value.i;
-
+                    if (IS_INT(start) && IS_INT(limit) && IS_INT(step)) {
+                        long long istart = VO_I(start);
+                        long long ilimit = VO_I(limit);
 
                         if (istart <= ilimit) {
                             ip += RB;
-                            stack[base + RA + 3] = new ValueObject(*start);
+                            stack[base + RA + 3] = ValueObject(start);
                         }
-                        start->value.i = start->value.i + step->value.i;
+                        VO_I(stack[base + RA]) += VO_I(step);
 
                     // float
                     } else {
@@ -379,7 +375,7 @@ namespace VM {
 
                 case OP_TFORLOOP: { // if R(A+1) ~= nil then { R(A)=R(A+1); pc += sBx }
                     RA = base + RA;
-                    if (stack[RA + 1]->type != LUA_TNIL) {
+                    if (IS_NIL(stack[RA + 1])) {
                         stack[RA] = stack[RA + 1];
                         ip += RB;
                     }
@@ -390,17 +386,17 @@ namespace VM {
                     // TODO will probably break for more elements, use array instead of hash?
 
                     int start = (RC-1) * LFIELDS_PER_FLUSH;
-                    Table * t = ((Table*)stack[base + RA]->value.p);
+                    Table * t = ((Table*)sgetptr(base + RA));
 
                     for (int i=1; i<=RB; i++) {
-                        t->set(ValueObject(start+i), *stack[base + RA + i]);
+                        t->set(ValueObject(start+i), stack[base + RA + i]);
                     }
                     t->setLen(RB);
                     break;
                 }
                 case OP_LEN: { // R(A) := length of R(B)
-                    assert(stack[base + RB]->type == LUA_TTABLE);
-                    stack[base + RA] = new ValueObject(((Table*)(stack[base+RB]->value.p))->getLen());
+                    assert(IS_TABLE(stack[base + RB]));
+                    stack[base + RA] = ValueObject(((Table*)sgetptr(base + RB))->getLen());
                     break;
                 }
 
@@ -408,8 +404,8 @@ namespace VM {
 
                     ValueObject C = getVO(stack + base, proto, RC);
 
-                    stack[base + RA + 1] = new ValueObject(*stack[base + RB]);
-                    stack[base + RA] = new ValueObject(((Table*)stack[base + RB]->value.p)->get(C));
+                    stack[base + RA + 1] = ValueObject(stack[base + RB]);
+                    stack[base + RA] = ValueObject(((Table*)sgetptr(base + RB))->get(C));
                     break;
                 }
 
@@ -427,11 +423,11 @@ namespace VM {
 
     }
 
-    ValueObject VM::getVO(ValueObject** stack, Function * proto, int R) const {
+    ValueObject VM::getVO(ValueObject* stack, Function * proto, int R) const {
         if (ISK(R)) {
             return (*(proto->constants))[INDEXK(R)];
         } else {
-            return *(stack[R]);
+            return stack[R];
         }
     }
 
@@ -448,8 +444,8 @@ namespace VM {
             Closure*  nc = ((Closure*)(func.value.p));
 
             int newbase = ci->base + ci->size;
-            stack[newbase]     = new ValueObject(B);
-            stack[newbase + 1] = new ValueObject(C);
+            stack[newbase]     = B;
+            stack[newbase + 1] = C;
 
             topCallFrame = new CallFrame(ci, nc, newbase, newbase+2, 2, 1);
             execute(topCallFrame);
@@ -463,7 +459,7 @@ namespace VM {
         return true;
     }
 
-    ValueObject* VM::arithmetic(long long a, long long b, OpCode op) {
+    ValueObject VM::arithmetic(long long a, long long b, OpCode op) {
         long long res;
         switch(op) {
             case OP_ADD: res = a + b; break;
@@ -473,9 +469,9 @@ namespace VM {
                 printf("unknown arithmetic op");
                 assert(false);
         }
-        return new ValueObject(res);
+        return ValueObject(res);
     }
-    ValueObject* VM::arithmetic(double a, double b, OpCode op) {
+    ValueObject VM::arithmetic(double a, double b, OpCode op) {
         double res;
         switch(op) {
             case OP_ADD: res = a + b; break;
@@ -485,7 +481,7 @@ namespace VM {
                 printf("unknown arithmetic op");
                 assert(false);
         }
-        return new ValueObject(res);
+        return ValueObject(res);
     }
 
     template <class T, class U>
@@ -516,11 +512,11 @@ namespace VM {
         for (int i=0;i < ci->base + ci->size;i++) {
             printf("%3i ", i - ci->base);
             printf((i == ci->top ? "> " : "| "));
-            if (stack[i] == NULL) {
+            /*if (stack[i] == NULL) {
                 printf("NULL\n");
-            } else {
-                stack[i]->print();
-            }
+            } else {*/
+                stack[i].print();
+            //}
         }
         printf("----/STACK ----------------\n\n");
 
