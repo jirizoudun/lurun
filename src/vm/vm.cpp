@@ -375,7 +375,7 @@ namespace VM {
 
                 case OP_TFORLOOP: { // if R(A+1) ~= nil then { R(A)=R(A+1); pc += sBx }
                     RA = base + RA;
-                    if (IS_NIL(stack[RA + 1])) {
+                    if (!IS_NIL(stack[RA + 1])) {
                         stack[RA] = stack[RA + 1];
                         ip += RB;
                     }
