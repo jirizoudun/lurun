@@ -17,7 +17,9 @@ typedef enum NATIVE_TYPE {
 
     LUA_NAT_IO_OPEN = 100,
     LUA_NAT_IO_CLOSE,
-    LUA_NAT_IO_WRITE
+    LUA_NAT_IO_WRITE,
+
+    LUA_NAT_FILE_WRITE = 200
 }NativeType;
 
 namespace Lua {

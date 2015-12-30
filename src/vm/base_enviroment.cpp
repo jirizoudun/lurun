@@ -22,6 +22,8 @@ namespace BaseEnv {
     void initIOTable(Table *env) {
         Table *io = new Table();
         io->set("write",         ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_IO_WRITE)));
+        io->set("open",          ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_IO_OPEN)));
+        io->set("close",         ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_IO_CLOSE)));
 
         env->set("io", ValueObject(LUA_TTABLE, io));
     }

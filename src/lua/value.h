@@ -12,6 +12,7 @@
 #define LUA_TTABLE		5
 #define LUA_TCLOSURE    6
 #define LUA_TNATIVE     99
+#define LUA_TFILE       111
 
 #define IS_NUMERIC(O) (IS_INT(O) || IS_FLT(O))
 #define IS_INT(O)     ((O).type == LUA_TNUMINT)
@@ -22,6 +23,7 @@
 #define IS_NATIVE(O)  ((O).type == LUA_TNATIVE)
 #define IS_STRING(O)  ((O).type == LUA_TSTRING)
 #define IS_CLOSURE(O) ((O).type == LUA_TCLOSURE)
+#define IS_FILE(O)    ((O).type == LUA_TFILE)
 
 #define VO_P(VO) ((VO).value.p)
 #define VO_I(VO) ((VO).value.i)
@@ -78,6 +80,7 @@ namespace Lua {
                     return ((StringObject*)VO_P(o))->getHash();
                 case LUA_TTABLE:
                     return std::hash<long long>()((long long)VO_P(o));
+                case LUA_TFILE:
                 case LUA_TCLOSURE:
                 case LUA_TNATIVE:
                 default:

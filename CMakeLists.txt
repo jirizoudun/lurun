@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 project(lurun)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") # -static-libgcc -static-libstdc++
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 set(SOURCE_FILES
@@ -42,6 +42,8 @@ set(SOURCE_FILES
         src/vm/base_enviroment.h
         src/vm/base_enviroment.cpp
         src/vm/heap.cpp
-        src/vm/heap.h)
+        src/vm/heap.h
+        src/lua/file.h
+        src/lua/file.cpp)
 
 add_executable(lurun ${SOURCE_FILES})

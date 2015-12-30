@@ -37,7 +37,8 @@ namespace Lua {
             case LUA_TNUMINT:  value.i = other.value.i; break;
 
             // copy by reference
-            case LUA_TTABLE: case LUA_TSTRING: case LUA_TCLOSURE:
+            case LUA_TTABLE: case LUA_TSTRING:
+            case LUA_TCLOSURE: case LUA_TFILE:
             case LUA_TNATIVE: value.p = other.value.p; break;
             default:
                 printf("Can't copy ValueObject [%i]\n", type);
@@ -49,6 +50,7 @@ namespace Lua {
     ValueObject& ValueObject::operator=(const ValueObject& other) {
         type = other.type;
         value = other.value;
+        return *this;
     }
 
     ValueObject::~ValueObject() { // TODO dynamic objects are deallocated by GC
@@ -64,6 +66,7 @@ namespace Lua {
             case LUA_TTABLE:  ((Table*)(value.p))->print(); break;
             case LUA_TCLOSURE: printf("[%p] Closure\n", value.p); break;
             case LUA_TNATIVE: ((Native*)(value.p))->print(); break;
+            case LUA_TFILE:   ((File*)(value.p))->print(); break;
             default: break; // make compiler happy
         }
     }
@@ -74,11 +77,13 @@ namespace Lua {
             case LUA_TNIL:     return string("nil");
             case LUA_TBOOLEAN: return string(value.b ? "true" : "false");
             case LUA_TSTRING:  return ((StringObject *)(value.p))->getString();
+            case LUA_TFILE:    return ((File*)(value.p))->getPathString();
             default: break; // make compiler happy
         }
 
         char * ptr = new char[50]; // TODO magic constant
         switch(type) {
+
             case LUA_TNUMFLT:  sprintf(ptr, "%g", value.d); break;
             case LUA_TNUMINT:  sprintf(ptr, "%lli", value.i); break;
             case LUA_TTABLE:   sprintf(ptr, "Table [%p]", value.p); break;
@@ -111,6 +116,7 @@ namespace Lua {
             case LUA_TTABLE:
             case LUA_TCLOSURE:
             case LUA_TNATIVE:
+            case LUA_TFILE:
                 return (value.p == other.value.p);
             default:
                 return false;

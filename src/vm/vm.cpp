@@ -297,7 +297,17 @@ namespace VM {
                 }
                 case OP_GETTABLE: { // R(A) := R(B)[RK(C)]
                     ValueObject C = getVO(stack+base, proto, RC);
-                    stack[base + RA] = ValueObject(((Table*)sgetptr(base + RB))->get(C));
+                    ValueObject B = getVO(stack+base, proto, RB);
+                    switch(B.type)
+                    {
+                        case LUA_TFILE:
+                            stack[base + RA] = ValueObject(((File*)sgetptr(base + RB))->metatable->get(C));
+                            break;
+
+                        default:
+                            stack[base + RA] = ValueObject(((Table*)sgetptr(base + RB))->get(C));
+                            break;
+                    }
                     break;
                 }
 
