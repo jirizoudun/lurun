@@ -7,13 +7,13 @@ namespace VM {
     int HeapManager::next_free_block = 0;
     char HeapManager::heap[HEAP_SIZE];
 
-    void HeapManager::read_block_head(char* ptr, char& block_size, char& type, bool& free) {
-        block_size = ptr[0];
+    void HeapManager::read_block_head(char* ptr, unsigned char& block_size, char& type, bool& free) {
+        block_size = (unsigned char)ptr[0];
         char flags = ptr[1];
         type =  (flags & (char)0b11111000) >> 3;
         free = !(flags & (char)1);
     }
-    void HeapManager::write_block_head(char* ptr, char block_size, char type) {
+    void HeapManager::write_block_head(char* ptr, unsigned char block_size, char type) {
         char flags = 0;
         flags |= (type << 3);
         flags |= (char)1;
@@ -23,7 +23,7 @@ namespace VM {
     }
 
     void* HeapManager::getAddress(size_t alloc_size) {
-        char block_size;
+        unsigned char block_size;
         char type;
         bool free;
 
@@ -57,7 +57,7 @@ namespace VM {
 
     void HeapManager::print() {
 
-        char block_size;
+        unsigned char block_size;
         char type;
         bool free;
         int p = 0;

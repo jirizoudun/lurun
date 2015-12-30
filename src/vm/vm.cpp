@@ -43,7 +43,7 @@ namespace VM {
         HeapManager::print();
 #endif
 
-        // delete initial frame, it's closure and _ENV as upValue
+        // delete initial frame
         delete topCallFrame;
     }
 
