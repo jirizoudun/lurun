@@ -167,7 +167,7 @@ namespace Lua {
             case LUA_NAT_IO_OPEN: {
                 assert(npar == 2);
                 assert(IS_STRING(stack[1]) && IS_STRING(stack[2]));
-                File *f = new File();
+                File *f = new File(); // not GC'd, dealloc'd at close
                 f->open(((StringObject *) VO_P(stack[1]))->getString().c_str(),
                         ((StringObject *) VO_P(stack[2]))->getString().c_str());
 
@@ -180,6 +180,7 @@ namespace Lua {
 
             case LUA_NAT_IO_CLOSE:
                 //TODO Close file.
+                // TODO dealloc file, not GC'd
                 break;
 
             case LUA_NAT_FILE_WRITE: {

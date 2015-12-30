@@ -76,8 +76,8 @@ namespace Lua {
 
     Table* File::getFileMetatable()
     {
-        Table *t = new Table();
-        t->set("write", ValueObject(LUA_TNATIVE, new Native(LUA_NAT_FILE_WRITE)));
+        Table *t = (Table*)ALLOC_TABLE();
+        t->set("write", ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_FILE_WRITE)));
         return t;
     }
 }
