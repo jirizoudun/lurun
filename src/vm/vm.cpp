@@ -44,9 +44,7 @@ namespace VM {
 #endif
 
         // delete initial frame, it's closure and _ENV as upValue
-        delete topCallFrame->closure;
         delete topCallFrame;
-        delete lastUpval;
     }
 
     void VM::execute(CallFrame * ci) {
