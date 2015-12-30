@@ -71,11 +71,31 @@ namespace Lua {
         }
 
         fprintf(f, str.c_str());
+        return true;
+    }
+
+    bool File::readLine(string &res) {
+        if(!this->opened)
+        {
+            return false;
+        }
+
+        char line[MAX_FILE_LINE_LENGTH];
+
+        if (fgets(line, MAX_FILE_LINE_LENGTH, f) != NULL) {
+            res.clear();
+            res.append(line);
+            res.replace(res.end()-1, res.end(), ""); // Remove new line at the end.
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     void File::print()
     {
-        printf("File\n");
+        printf("File (%s)\n", opened ? path : "closed");
     }
 
     std::string File::getPathString()
@@ -87,6 +107,7 @@ namespace Lua {
     {
         Table *t = (Table*)ALLOC_TABLE();
         t->set("write", ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_FILE_WRITE)));
+        t->set("read", ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_FILE_READ)));
         return t;
     }
 }

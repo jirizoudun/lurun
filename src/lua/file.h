@@ -8,6 +8,8 @@
 #include <String>
 #include "../common.h"
 
+#define MAX_FILE_LINE_LENGTH 500
+
 namespace Lua {
     class File {
         bool opened;
@@ -27,6 +29,8 @@ namespace Lua {
         bool close();
 
         bool write(std::string str);
+        bool readLine(std::string &res);
+
         std::string getPathString();
 
         void print();

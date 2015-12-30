@@ -20,8 +20,9 @@ typedef enum NATIVE_TYPE {
     LUA_NAT_IO_WRITE,
 
     LUA_NAT_FILE_WRITE = 200,
+    LUA_NAT_FILE_READ,
 
-    LUA_NAT_MATH_CEIL
+    LUA_NAT_MATH_CEIL = 300
 }NativeType;
 
 namespace Lua {

@@ -167,7 +167,7 @@ namespace Lua {
             case LUA_NAT_IO_OPEN: {
                 assert(npar == 2);
                 assert(IS_STRING(stack[1]) && IS_STRING(stack[2]));
-                File *f = new File(); // not GC'd, dealloc'd at close
+                File *f = (File*)ALLOC_FILE();
                 f->open(((StringObject *) VO_P(stack[1]))->getString().c_str(),
                         ((StringObject *) VO_P(stack[2]))->getString().c_str());
 
@@ -183,7 +183,6 @@ namespace Lua {
                 assert(IS_FILE(stack[1]));
 
                 File *f = (File *) VO_P(stack[1]);
-
                 if (f->isOpened()) {
                     f->close();
                 }
@@ -208,6 +207,26 @@ namespace Lua {
                     assert(false);
                 }
 
+                break;
+            }
+
+            case LUA_NAT_FILE_READ: {
+                assert(npar == 1 && IS_FILE(stack[1]));
+
+                File *f = (File*)VO_P(stack[1]);
+                if(f->isOpened()) {
+                    string line;
+                    if(f->readLine(line)) {
+                        base_res[0] = ValueObject(LUA_TSTRING, ALLOC_STRING(line));
+                    }
+                    else
+                    {
+                        base_res[0] = ValueObject(); // LUA_TNIL
+                    }
+                }
+                else {
+
+                }
                 break;
             }
 

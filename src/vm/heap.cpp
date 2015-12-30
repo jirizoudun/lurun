@@ -73,6 +73,7 @@ namespace VM {
                     case GC_CLOSURE: printf(", closure"); break;
                     case GC_STRING:  printf(", string"); break;
                     case GC_NATIVE:  printf(", native"); break;
+                    case GC_FILE:    printf(", file"); break;
                     default: printf("unknown"); break;
                 }
             }
