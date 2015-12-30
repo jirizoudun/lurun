@@ -26,6 +26,7 @@ namespace Lua {
         bool open(const char* path, const char *mode);
         bool close();
 
+        bool write(std::string str);
         std::string getPathString();
 
         void print();

@@ -178,21 +178,41 @@ namespace Lua {
                 return nres;
             }
 
-            case LUA_NAT_IO_CLOSE:
-                //TODO Close file.
-                // TODO dealloc file, not GC'd
+            case LUA_NAT_IO_CLOSE: {
+                assert(npar == 1);
+                assert(IS_FILE(stack[1]));
+
+                File *f = (File *) VO_P(stack[1]);
+
+                if (f->isOpened()) {
+                    f->close();
+                }
                 break;
+            }
 
             case LUA_NAT_FILE_WRITE: {
                 assert(npar == 2);
-                assert(IS_FILE(stack[1]) && IS_STRING(stack[2]));
+                assert(IS_FILE(stack[1]));
 
                 File *f = ((File*)VO_P(stack[1]));
                 if(f->isOpened()) {
-                    //TODO Write to the file.
+                    if(IS_STRING(stack[2])) {
+                        f->write(((StringObject*)VO_P(stack[2]))->getString());
+                    }
+                    else if(IS_INT(stack[2])) {
+                        f->write(to_string(VO_I(stack[2])));
+                    }
+                    else if(IS_FLT(stack[2])) {
+                        f->write(to_string(VO_D(stack[2])));
+                    }
+                    else {
+                        // TODO: Error
+                        assert(false);
+                    }
                 }
                 else{
-                    //TODO Write some notice that file is closed.
+                    // TODO Write some notice that file is closed.
+                    assert(false);
                 }
 
                 break;
