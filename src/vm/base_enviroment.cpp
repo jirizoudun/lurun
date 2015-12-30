@@ -28,9 +28,16 @@ namespace BaseEnv {
         env->set("io", ValueObject(LUA_TTABLE, io));
     }
 
+    void initMathTable(Table *env) {
+        Table *math = (Table*)ALLOC_TABLE();
+        math->set("ceil",         ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_MATH_CEIL)));
+
+        env->set("math", ValueObject(LUA_TTABLE, math));
+    }
+
     void initEnviroment(Table *env) {
         initBaseFunctions(env);
-
         initIOTable(env);
+        initMathTable(env);
     }
 }

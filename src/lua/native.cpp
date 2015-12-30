@@ -198,6 +198,12 @@ namespace Lua {
                 break;
             }
 
+            case LUA_NAT_MATH_CEIL: {
+                assert(npar == 1);
+                base_res[0] = ValueObject((int)ceil(VO_D(stack[1])));
+                return 1;
+            }
+
             default: {
                 assert(false);
                 return 0; // make compiler happy

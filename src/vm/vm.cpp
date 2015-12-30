@@ -311,7 +311,8 @@ namespace VM {
                     break;
                 }
 
-                case OP_ADD: case OP_SUB: case OP_MUL: {
+                case OP_ADD: case OP_SUB:
+                case OP_MUL: case OP_DIV: {
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
 
@@ -370,7 +371,8 @@ namespace VM {
                         long long istart = VO_I(start);
                         long long ilimit = VO_I(limit);
 
-                        if (istart <= ilimit) {
+                        bool cnd = VO_I(step) > 0 ? istart <= ilimit : ilimit <= istart;
+                        if (cnd) {
                             ip += RB;
                             stack[base + RA + 3] = ValueObject(start);
                         }
@@ -471,16 +473,15 @@ namespace VM {
     }
 
     ValueObject VM::arithmetic(long long a, long long b, OpCode op) {
-        long long res;
         switch(op) {
-            case OP_ADD: res = a + b; break;
-            case OP_SUB: res = a - b; break;
-            case OP_MUL: res = a * b; break;
+            case OP_ADD: return ValueObject(a + b);
+            case OP_SUB: return ValueObject(a - b);
+            case OP_MUL: return ValueObject(a * b);
+            case OP_DIV: return ValueObject((double)a / (double)b);
             default:
                 printf("unknown arithmetic op");
                 assert(false);
         }
-        return ValueObject(res);
     }
     ValueObject VM::arithmetic(double a, double b, OpCode op) {
         double res;
@@ -488,6 +489,7 @@ namespace VM {
             case OP_ADD: res = a + b; break;
             case OP_SUB: res = a - b; break;
             case OP_MUL: res = a * b; break;
+            case OP_DIV: res = a / b; break;
             default:
                 printf("unknown arithmetic op");
                 assert(false);
