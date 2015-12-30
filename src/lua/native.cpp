@@ -196,16 +196,9 @@ namespace Lua {
 
                 File *f = ((File*)VO_P(stack[1]));
                 if(f->isOpened()) {
-                    if(IS_STRING(stack[2])) {
-                        f->write(((StringObject*)VO_P(stack[2]))->getString());
-                    }
-                    else if(IS_INT(stack[2])) {
-                        f->write(to_string(VO_I(stack[2])));
-                    }
-                    else if(IS_FLT(stack[2])) {
-                        f->write(to_string(VO_D(stack[2])));
-                    }
-                    else {
+                    if(IS_STRING(stack[2]) || IS_NUMERIC(stack[2])) {
+                        f->write(stack[2].toString());
+                    } else {
                         // TODO: Error
                         assert(false);
                     }
