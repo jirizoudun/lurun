@@ -38,7 +38,7 @@ namespace Lua {
                         type = "unknown";
                 }
 
-                base_res[0] = ValueObject(LUA_TSTRING, new StringObject(new string(type)));
+                base_res[0] = ValueObject(LUA_TSTRING, ALLOC_STRING(type));
 
                 return 1;
             }
@@ -52,7 +52,7 @@ namespace Lua {
             case LUA_NAT_TOSTRING:
                 assert(npar == 1);
                 assert(nres == -1 || nres == 1);
-                base_res[0] = ValueObject(LUA_TSTRING, new StringObject(stack[1].toString()));
+                base_res[0] = ValueObject(LUA_TSTRING, ALLOC_STRING(stack[1].toString()));
                 return 1;
 
             case LUA_NAT_TONUMBER:
@@ -131,7 +131,7 @@ namespace Lua {
              */
             case LUA_NAT_PAIRS:
                 assert(npar == 1);
-                base_res[0] = ValueObject(LUA_TNATIVE, (void *) (new Native(LUA_NAT_NEXT)));
+                base_res[0] = ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_NEXT));
                 base_res[2] = ValueObject();
                 return 3;
 

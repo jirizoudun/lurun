@@ -10,7 +10,7 @@ namespace VM {
 
     public:
         Function* proto;
-        std::vector<UpvalueRef*> upvalues;
+        std::vector<UpvalueRef*>* upvalues;
 
         Closure(Function* function);
         ~Closure();

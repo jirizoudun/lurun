@@ -1,6 +1,3 @@
-//
-// Created by Jiří Zoudun on 22/11/15.
-//
 
 #ifndef LURUN_NATIVE_H
 #define LURUN_NATIVE_H

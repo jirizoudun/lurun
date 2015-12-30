@@ -2,8 +2,6 @@
 #ifndef LURUN_VALUE_H
 #define LURUN_VALUE_H
 
-#include "string_object.h"
-
 #define LUA_TNIL        0
 #define LUA_TBOOLEAN    1
 #define LUA_TNUMFLT     3
@@ -15,13 +13,14 @@
 #define LUA_TCLOSURE    6
 #define LUA_TNATIVE     99
 
-#define IS_NUMERIC(O) ((((O).type) & 3) == 3)
-#define IS_INT(O) ((O).type == LUA_TNUMINT)
-#define IS_NIL(O) ((O).type == LUA_TNIL)
-#define IS_BOOL(O) ((O).type == LUA_TBOOLEAN)
-#define IS_TABLE(O) ((O).type == LUA_TTABLE)
-#define IS_NATIVE(O) ((O).type == LUA_TNATIVE)
-#define IS_STRING(O) ((O).type == LUA_TSTRING)
+#define IS_NUMERIC(O) (IS_INT(O) || IS_FLT(O))
+#define IS_INT(O)     ((O).type == LUA_TNUMINT)
+#define IS_FLT(O)     ((O).type == LUA_TNUMFLT)
+#define IS_NIL(O)     ((O).type == LUA_TNIL)
+#define IS_BOOL(O)    ((O).type == LUA_TBOOLEAN)
+#define IS_TABLE(O)   ((O).type == LUA_TTABLE)
+#define IS_NATIVE(O)  ((O).type == LUA_TNATIVE)
+#define IS_STRING(O)  ((O).type == LUA_TSTRING)
 #define IS_CLOSURE(O) ((O).type == LUA_TCLOSURE)
 
 #define VO_P(VO) ((VO).value.p)
@@ -30,6 +29,8 @@
 #define VO_B(VO) ((VO).value.b)
 
 namespace Lua {
+
+    using namespace std;
 
     // inspired by http://www.lua.org/doc/jucs05.pdf, page 5
     union Value {
@@ -68,19 +69,19 @@ namespace Lua {
                 case LUA_TNIL:
                     return std::hash<void*>()(NULL);
                 case LUA_TBOOLEAN:
-                    return std::hash<bool>()(o.value.b);
+                    return std::hash<bool>()(VO_B(o));
                 case LUA_TNUMFLT:
-                    return std::hash<double>()(o.value.d);
+                    return std::hash<double>()(VO_D(o));
                 case LUA_TNUMINT:
-                    return std::hash<long long>()(o.value.i);
+                    return std::hash<long long>()(VO_I(o));
                 case LUA_TSTRING:
-                    return ((StringObject *)(o.value.p))->getHash();
+                    return ((StringObject*)VO_P(o))->getHash();
                 case LUA_TTABLE:
-                    return std::hash<long long>()((long long)o.value.p);
-                default:
+                    return std::hash<long long>()((long long)VO_P(o));
                 case LUA_TCLOSURE:
                 case LUA_TNATIVE:
-                    // NOT SUPPORTED
+                default:
+                    printf("Can't set as table key");
                     assert(false);
             }
         }

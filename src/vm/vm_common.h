@@ -6,6 +6,8 @@
 
 #include "closure.h"
 #include "call_frame.h"
+#include "heap.h"
+#include "base_enviroment.h"
 #include "vm.h"
 
 #endif //LURUN_VM_COMMON_H

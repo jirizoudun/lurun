@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 16. 11. 2015.
-//
 
 #ifndef LURUN_UPVALUE_H
 #define LURUN_UPVALUE_H

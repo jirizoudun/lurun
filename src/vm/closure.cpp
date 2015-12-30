@@ -2,11 +2,13 @@
 #include "../common.h"
 
 namespace VM {
-    Closure::Closure(Function *function):
-            proto(function)
-    {}
+    Closure::Closure(Function *function): proto(function)
+    {
+        upvalues = new vector<UpvalueRef*>;
+    }
 
     Closure::~Closure() {
-        // DO NOT DELETE PROTO
+        delete upvalues;
+        // do not delete prototype here
     }
 }

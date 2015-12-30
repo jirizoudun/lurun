@@ -7,11 +7,13 @@ namespace Lua {
     // TODO use array part
     class Table {
 
-        std::unordered_map<ValueObject,ValueObject,ValueObjectHasher> hash_part;
+        /** Similar to string each Table keeps it's own and unique hash_part */
+        std::unordered_map<ValueObject,ValueObject,ValueObjectHasher>* hash_part;
         int len = 0;
 
     public:
 
+        // TODO private and create interface
         Table* metatable = NULL;
 
         Table();
@@ -20,7 +22,9 @@ namespace Lua {
         void set(ValueObject key, ValueObject value);
         void set(const char * key, ValueObject value);
 
+        ValueObject get(const char* key) const;
         ValueObject get(const ValueObject key) const;
+
         std::pair<ValueObject,ValueObject> next(const ValueObject key);
 
         void setLen(int);

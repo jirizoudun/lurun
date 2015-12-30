@@ -25,7 +25,6 @@ set(SOURCE_FILES
         src/lua/instruction_list.h
         src/lua/value.cpp
         src/lua/value.h
-        src/lua/container.cpp
         src/lua/container.h
         src/lua/upvalue.cpp
         src/lua/upvalue.h
@@ -41,6 +40,8 @@ set(SOURCE_FILES
         src/lua/native.h
         src/vm/call_frame.cpp
         src/vm/base_enviroment.h
-        src/vm/base_enviroment.cpp)
+        src/vm/base_enviroment.cpp
+        src/vm/heap.cpp
+        src/vm/heap.h)
 
 add_executable(lurun ${SOURCE_FILES})

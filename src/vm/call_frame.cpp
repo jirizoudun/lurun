@@ -10,6 +10,6 @@ namespace VM {
     }
 
     CallFrame::~CallFrame() {
-        // TODO
+        // do nothing, closure should be GC'd
     }
 }

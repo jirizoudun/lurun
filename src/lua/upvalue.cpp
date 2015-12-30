@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 16. 11. 2015.
-//
 
 #include "../common.h"
 
@@ -9,7 +6,6 @@ namespace Lua {
     UpvalueDesc::UpvalueDesc() {}
     UpvalueDesc::UpvalueDesc(byte instack, byte idx):
             instack(instack),
-
             idx(idx)
     {}
 
@@ -47,12 +43,7 @@ namespace Lua {
         value = *voPointer;
         voPointer = NULL;
 
-        UpvalueRef* p = prev;
-        UpvalueRef* n = next;
-
         if (prev != NULL) {prev->next = next;}
         if (next != NULL) {next->prev = prev;}
-
     }
-
 }

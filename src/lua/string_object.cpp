@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 15. 11. 2015.
-//
 
 #include "../common.h"
 
@@ -10,10 +7,6 @@ namespace Lua {
 
     StringObject::StringObject(string str) {
         this->str = new string(str);
-        compute_hash();
-    }
-    StringObject::StringObject(string* str) {
-        this->str = str;
         compute_hash();
     }
     StringObject::StringObject(const char* str) {

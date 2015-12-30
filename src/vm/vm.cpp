@@ -1,5 +1,5 @@
+
 #include "../common.h"
-#include "base_enviroment.h"
 
 namespace VM {
 
@@ -21,16 +21,16 @@ namespace VM {
 #endif
 
         // create environment
-        Table* _ENV = new Table();
+        Table* _ENV = (Table*)ALLOC_TABLE();
         initEnviroment(_ENV);
 
         // create upvalue from environment
         stack[0] = ValueObject(LUA_TTABLE, (void *)_ENV);
-        lastUpval = new UpvalueRef(stack, NULL); // new upvalue from _ENV table
+        lastUpval = (UpvalueRef*)ALLOC_UPVAL(stack, NULL); // new upvalue from _ENV table
 
         // create call frame
-        Closure * baseClosure = new Closure(initialChunk); // FIXME this is leaking
-        baseClosure->upvalues.push_back(lastUpval);
+        Closure * baseClosure = (Closure*)ALLOC_CLOSURE(initialChunk);
+        baseClosure->upvalues->push_back(lastUpval);
 
         topCallFrame = new CallFrame(NULL, baseClosure, 1, 2);
     }
@@ -75,7 +75,7 @@ namespace VM {
             switch(op) {
                 case OP_CLOSURE: {
                     Function * p = proto->protos->at(RB);
-                    Closure * newClosure = new Closure(p);
+                    Closure * newClosure = (Closure*)ALLOC_CLOSURE(Closure(p));
 
                     for(int i = 0; i < p->upvaluesdescs->count; i++) {
                         int instack = p->upvaluesdescs->get(i).instack;
@@ -90,7 +90,7 @@ namespace VM {
                             UpvalueRef * upval = lastUpval;
                             while (upval != NULL) {
                                 if (upval->voPointer == ptr) {
-                                    newClosure->upvalues.push_back(upval);
+                                    newClosure->upvalues->push_back(upval);
                                     break;
                                 } else {
                                     upval = upval->next;
@@ -99,12 +99,12 @@ namespace VM {
 
                             // upval wasn't found, create new one
                             if (upval == NULL) {
-                                lastUpval = new UpvalueRef(ptr, lastUpval);
-                                newClosure->upvalues.push_back(lastUpval);
+                                lastUpval = (UpvalueRef*)ALLOC_UPVAL(ptr, lastUpval);
+                                newClosure->upvalues->push_back(lastUpval);
                             }
                         // get upvalue from enclosing function
                         } else {
-                            newClosure->upvalues.push_back(ci->closure->upvalues[idx]);
+                            newClosure->upvalues->push_back(ci->closure->upvalues->at(idx));
                         }
                     }
 
@@ -113,7 +113,7 @@ namespace VM {
                 }
                 case OP_GETTABUP: { // R(A) := UpValue[B][RK(C)]
                     ValueObject C = getVO(stack + base, proto, RC);
-                    Table* t = (Table*)VO_P(ci->closure->upvalues[RB]->getValue());
+                    Table* t = (Table*)VO_P(ci->closure->upvalues->at(RB)->getValue());
 
                     stack[base + RA] = ValueObject(t->get(C));
                     break;
@@ -121,11 +121,11 @@ namespace VM {
                 case OP_SETTABUP: { // UpValue[A][RK(B)] := RK(C)
                     ValueObject B = getVO(stack + base, proto, RB);
                     ValueObject C = getVO(stack + base, proto, RC);
-                    ((Table *)VO_P(ci->closure->upvalues[RA]->getValue()))->set(B, C);
+                    ((Table *)VO_P(ci->closure->upvalues->at(RA)->getValue()))->set(B, C);
                     break;
                 }
                 case OP_GETUPVAL:
-                    stack[base + RA] = ci->closure->upvalues[RB]->getValue();
+                    stack[base + RA] = ci->closure->upvalues->at(RB)->getValue();
                     break;
 
                 case OP_LOADNIL: // R(A), R(A+1), ..., R(A+B) := nil
@@ -135,7 +135,7 @@ namespace VM {
                     break;
 
                 case OP_SETUPVAL: { // UpValue[B] := R(A)
-                    UpvalueRef *upv = ci->closure->upvalues[RB];
+                    UpvalueRef *upv = ci->closure->upvalues->at(RB);
                     if (upv->voPointer == NULL) {
                         upv->value = stack[base + RA];
                     } else {
@@ -255,7 +255,7 @@ namespace VM {
                         for(int i = 0; i < clProto->upvaluesdescs->count; i++) {
 
                             if (clProto->upvaluesdescs->get(i).instack) {
-                                UpvalueRef * toClose = clClosure->upvalues[i];
+                                UpvalueRef * toClose = clClosure->upvalues->at(i);
                                 if (toClose == lastUpval) {
                                     lastUpval = toClose->next;
                                 }
@@ -279,11 +279,7 @@ namespace VM {
                 case OP_CONCAT: { // R(A) := R(B).. ... ..R(C)
                     string B = stack[base + RB].toString();
                     string C = stack[base + RC].toString();
-
-                    string* concat = new string(B);
-                    concat->append(C);
-
-                    stack[base + RA] = ValueObject(LUA_TSTRING, new StringObject(concat));
+                    stack[base + RA] = ValueObject(LUA_TSTRING, ALLOC_STRING(string(B).append(C)));
                     break;
                 }
 
@@ -296,7 +292,7 @@ namespace VM {
                 }
                 case OP_NEWTABLE: {
                     // TODO sizes from RB, RC to optimize memory and speed
-                    stack[base + RA] = ValueObject(LUA_TTABLE, new Table());
+                    stack[base + RA] = ValueObject(LUA_TTABLE, ALLOC_TABLE());
                     break;
                 }
                 case OP_GETTABLE: { // R(A) := R(B)[RK(C)]
@@ -442,7 +438,7 @@ namespace VM {
         if (meta == NULL) { meta = ((Table*)C.value.p)->metatable; }
         if (meta == NULL) { return false; }
 
-        ValueObject func = meta->get(ValueObject(LUA_TSTRING, new StringObject(m)));
+        ValueObject func = meta->get(m);
         if (IS_NIL(func)) {
             return false;
         } else {

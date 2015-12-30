@@ -6,6 +6,7 @@
 
 namespace Lua {
 
+    /** Function prototype */
     Function::Function(StringObject * func_name, int line_defined_first, int line_defined_last, byte num_params,
                        byte is_vararg, byte max_stack_size,
                        InstructionList* code,
