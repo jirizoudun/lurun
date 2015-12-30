@@ -14,5 +14,6 @@
 #include "function.h"
 #include "table.h"
 #include "native.h"
+#include "file.h"
 
 #endif //LURUN_LUA_H

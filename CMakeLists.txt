@@ -41,6 +41,8 @@ set(SOURCE_FILES
         src/lua/native.h
         src/vm/call_frame.cpp
         src/vm/base_enviroment.h
-        src/vm/base_enviroment.cpp)
+        src/vm/base_enviroment.cpp
+        src/lua/file.h
+        src/lua/file.cpp)
 
 add_executable(lurun ${SOURCE_FILES})

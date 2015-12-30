@@ -164,10 +164,44 @@ namespace Lua {
                 }
                 return 0;
 
+            case LUA_NAT_IO_OPEN: {
+                assert(npar == 2);
+                assert(IS_STRING(stack[1]) && IS_STRING(stack[2]));
+                File *f = new File();
+                f->open(((StringObject *) VO_P(stack[1]))->getString().c_str(),
+                        ((StringObject *) VO_P(stack[2]))->getString().c_str());
+
+                for(int i = 0; i < nres; i++) {
+                    base_res[i] = ValueObject(LUA_TFILE, f);
+                }
+
+                return nres;
+            }
+
+            case LUA_NAT_IO_CLOSE:
+                //TODO Close file.
+                break;
+
+            case LUA_NAT_FILE_WRITE: {
+                assert(npar == 2);
+                assert(IS_FILE(stack[1]) && IS_STRING(stack[2]));
+
+                File *f = ((File*)VO_P(stack[1]));
+                if(f->isOpened()) {
+                    //TODO Write to the file.
+                }
+                else{
+                    //TODO Write some notice that file is closed.
+                }
+
+                break;
+            }
+
             default: {
                 assert(false);
                 return 0; // make compiler happy
             }
         }
+        return 0;
     }
 }

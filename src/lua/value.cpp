@@ -39,6 +39,7 @@ namespace Lua {
             case LUA_TSTRING:
             case LUA_TCLOSURE: // copy by reference
             case LUA_TNATIVE:
+            case LUA_TFILE:
                 value.p = other.value.p;
                 break;
             default:
@@ -51,6 +52,7 @@ namespace Lua {
     ValueObject& ValueObject::operator=(const ValueObject& other) {
         type = other.type;
         value = other.value;
+        return *this;
     }
 
     ValueObject::~ValueObject() { // TODO dynamic objects are deallocated by GC
@@ -77,10 +79,13 @@ namespace Lua {
                 ((Table*)(value.p))->print();
                 break;
             case LUA_TCLOSURE:
-                printf("[%i] Closure\n", value.p);
+                printf("[%ld] Closure\n", (long)value.p);
                 break;
             case LUA_TNATIVE:
                 ((Native*)(value.p))->print();
+                break;
+            case LUA_TFILE:
+                ((File*)(value.p))->print();
                 break;
             default:
                 break;
@@ -110,6 +115,9 @@ namespace Lua {
             case LUA_TCLOSURE:
                 sprintf(ptr, "Closure[%d]", ((Native*)(value.p))->getType());
                 return ptr;
+            case LUA_TFILE:
+                sprintf(ptr, "File [%s]", ((File*)(value.p))->getPathString().c_str());
+                return ptr;
             default:
                 printf("Can't convert to string  type %i\n", type);
                 assert(false);
@@ -136,6 +144,7 @@ namespace Lua {
             case LUA_TTABLE:
             case LUA_TCLOSURE:
             case LUA_TNATIVE:
+            case LUA_TFILE:
                 return (value.p == other.value.p);
                 // return (this == &other);
             default:
