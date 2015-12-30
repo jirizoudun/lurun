@@ -5,14 +5,27 @@
 #include "../common.h"
 
 namespace VM {
+
 using namespace Lua;
 
-#define ALLOC_TABLE()            ((void*)(new Table()))
-#define ALLOC_UPVAL(STACK, NEXT) ((void*)(new UpvalueRef(STACK, NEXT)))
-#define ALLOC_CLOSURE(FUNCTION)  ((void*)(new Closure(FUNCTION)))
-#define ALLOC_STRING(STR)        ((void*)(new StringObject(STR)))
-#define ALLOC_NATIVE(TYPE)       ((void*)(new Native(TYPE)))
+    class HeapManager {
 
+        static char heap[HEAP_SIZE];
+        static int next_free_block;
+
+        static void read_block_head(char* ptr, char& block_size, char& type, bool& free);
+        static void write_block_head(char* ptr, char block_size, char type);
+
+        /** Get address of next free block (including header) on heap */
+        static void* getAddress(size_t size);
+
+    public:
+
+        /** Set flags for allocation and return address of block contents */
+        static void* allocBlock(size_t size, char type);
+
+        static void print();
+    };
 }
 
 #endif //LURUN_HEAP_H

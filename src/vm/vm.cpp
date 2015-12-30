@@ -38,6 +38,11 @@ namespace VM {
     void VM::run() {
         execute(topCallFrame);
 
+#if DEBUG_HEAP
+        printf("\nHEAP:\n");
+        HeapManager::print();
+#endif
+
         // delete initial frame, it's closure and _ENV as upValue
         delete topCallFrame->closure;
         delete topCallFrame;

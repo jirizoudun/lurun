@@ -6,13 +6,13 @@
 #define DEBUG 0
 #define DEBUG_TABLE_CONTENTS 0
 #define DEBUG_STACK 0
+#define DEBUG_HEAP 0
 
 #define MAX_FILENAME_LENGTH 128
 #define BUFFER_SIZE 1048576 //MB
 
 #define INSTRUCTION_SIZE 4
 
-#define LFIELDS_PER_FLUSH 50 // used in lists
 
 
 
