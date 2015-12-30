@@ -64,6 +64,15 @@ namespace Lua {
         return this->opened;
     }
 
+    bool File::write(std::string str) {
+        if(!this->opened)
+        {
+            return false;
+        }
+
+        fprintf(f, str.c_str());
+    }
+
     void File::print()
     {
         printf("File\n");
