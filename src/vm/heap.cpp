@@ -56,16 +56,25 @@ namespace VM {
             exit(1);
         }
 
+#if DEBUG_HEAP_ALLOC
         printf("ALLOC %i %i\n", (int)(ptr - heap), type);
+#endif
 
-        unsigned char next_free_block_size = 0;
+        int next_free_block_size = 0;
+
+        // I'm not at the end of heap, there is block after me
         if (block_size != 0) {
-            next_free_block_size = (unsigned char)(block_size - alloc_size - HEAP_HEAD_SIZE);
+            next_free_block_size = block_size - alloc_size - HEAP_HEAD_SIZE;
 
             // if new free block would be smaller than minimum,
-            // use whole block as is
+            // use whole block as is and do nothing, since we
+            // reached other set-up block
             if (next_free_block_size < HEAP_MIN_BLOCK_SIZE) {
                 alloc_size = block_size;
+            // else create new block with new size
+            } else {
+                write_block_size(ptr + FULL_BLOCK_SIZE(alloc_size), (unsigned char)next_free_block_size);
+                write_block_flags(ptr + FULL_BLOCK_SIZE(alloc_size), 0, 0, 1);
             }
         }
 
@@ -74,10 +83,6 @@ namespace VM {
 
         if (next_free_block == ptr) {
             next_free_block += FULL_BLOCK_SIZE(alloc_size);
-            if (block_size != 0) {
-                write_block_size(next_free_block, next_free_block_size);
-                write_block_flags(next_free_block, 0, 0, 1);
-            }
         }
 
         return ptr + HEAP_HEAD_SIZE;
@@ -111,7 +116,10 @@ namespace VM {
             if (!free && color == GC_WHITE) {
                 //printf("before: %i\n", free);
                 if (type == GC_STRING) {((StringObject*)(block+2))->print();}
+
+#if DEBUG_HEAP_ALLOC
                 printf("DEALLOC %i\n", (int)(block - heap));
+#endif
 
                 switch(type) {
                     case GC_TABLE:   ((Table*)       (block + HEAP_HEAD_SIZE))->~Table();        break;
@@ -157,11 +165,8 @@ namespace VM {
             // if not gray check if white
             read_block_flags(block_ptr, dummy_type, color, free);
 
-            printf("INDEX = %i\n", (ptr - HeapManager::heap - 2));
-            printf("TYPE = %i\n", dummy_type);
-
-            //print();
-
+            //printf("INDEX = %i\n", (ptr - HeapManager::heap - 2));
+            //printf("TYPE = %i\n", dummy_type);
 
             assert(!free); // sanity check
             if (color == GC_WHITE) {

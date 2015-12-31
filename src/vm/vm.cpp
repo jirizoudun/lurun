@@ -279,12 +279,12 @@ exit(1);
                     for (int i = RA; i <= RA + RB - 2; i++) {
                         stack[R++] = stack[base + i];
                     }
+                    ci->top = R - 1;
 
-                    while (R < ci->top) {
+                    // clean after yourself
+                    while (R < base + ci->size) {
                         stack[R++].type = LUA_TNIL;
                     }
-
-                    ci->top = R - 1;
                     return;
                 }
                 case OP_MOVE: // RA = RB
@@ -444,19 +444,8 @@ exit(1);
             }
 
 
-
-            if (gc >= 4170) {
-              //  printStack(ci);
-//                HeapManager::print();
-            }
-
             GC::root(stack, ci);
             GC::mark();
-
-            HeapManager::print();
-
-            //HeapManager::printStatus();
-
             if (HeapManager::gray.empty()) {
                 GC::sweep();
             }

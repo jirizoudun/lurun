@@ -19,7 +19,6 @@ namespace VM {
 
     void GC::mark() {
         while (!HeapManager::gray.empty()) { // TODO shouldn't do all at once
-            printf(" ########## \n");
             HeapManager::markReferencesGray();
         }
 
