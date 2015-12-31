@@ -91,7 +91,7 @@ namespace VM {
         return ptr + HEAP_HEAD_SIZE;
     }
 
-    void HeapManager::purgeHeap() {
+    void HeapManager::purgeHeap(bool force) {
 
         unsigned char block_size;
         char type, color;
@@ -116,7 +116,7 @@ namespace VM {
             read_block_flags(block, type, color, free);
 
             // free white blocks
-            if (!free && color == GC_WHITE) {
+            if (!free && (color == GC_WHITE || force)) {
 
 #if DEBUG_HEAP_ALLOC
                 printf("DEALLOC %i\n", (int)(block - heap));
