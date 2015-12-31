@@ -11,6 +11,8 @@
 
 #define FULL_BLOCK_SIZE(BLOCK_SIZE) (BLOCK_SIZE + HEAP_HEAD_SIZE)
 
+#define GC_CYCLES 1000 // after how many instructions run GC
+
 #define GC_TABLE   1
 #define GC_UPVAL   2
 #define GC_CLOSURE 3

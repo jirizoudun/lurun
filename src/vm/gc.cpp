@@ -22,10 +22,9 @@ namespace VM {
             HeapManager::markReferencesGray();
         }
 
-        /*
         if (HeapManager::gray.empty()) {
             sweep();
-        }*/
+        }
     }
 
     void GC::sweep(bool force) {
