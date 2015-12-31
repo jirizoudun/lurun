@@ -114,8 +114,6 @@ namespace VM {
 
             // free white blocks
             if (!free && color == GC_WHITE) {
-                //printf("before: %i\n", free);
-                if (type == GC_STRING) {((StringObject*)(block+2))->print();}
 
 #if DEBUG_HEAP_ALLOC
                 printf("DEALLOC %i\n", (int)(block - heap));
