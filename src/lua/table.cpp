@@ -67,4 +67,14 @@ namespace Lua {
         }
 #endif
     }
+
+    void Table::gc() const {
+        if (metatable != NULL) {
+            VM::HeapManager::markGray((char*)metatable);
+        }
+        for (auto it = hash_part->begin(); it != hash_part->end(); ++it) {
+            (it->first).gc();
+            (it->second).gc();
+        }
+    }
 }

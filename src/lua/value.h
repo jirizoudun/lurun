@@ -2,6 +2,8 @@
 #ifndef LURUN_VALUE_H
 #define LURUN_VALUE_H
 
+#include "../vm/gc_object.h"
+
 #define LUA_TNIL        0
 #define LUA_TBOOLEAN    1
 #define LUA_TNUMFLT     3
@@ -63,6 +65,8 @@ namespace Lua {
         const string toString() const;
 
         bool operator==(const ValueObject& other) const;
+
+        void gc() const;
     };
 
     struct ValueObjectHasher {

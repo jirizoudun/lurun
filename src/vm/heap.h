@@ -11,20 +11,31 @@ using namespace Lua;
     class HeapManager {
 
         static char heap[HEAP_SIZE];
-        static int next_free_block;
 
-        static void read_block_head(char* ptr, unsigned char& block_size, char& type, bool& free);
-        static void write_block_head(char* ptr, unsigned char block_size, char type);
+        static char* next_free_block;
+
+        static void read_block_size(char* ptr, unsigned char& block_size);
+        static void read_block_flags(char* ptr, char& type, char& color, bool& free);
+
+        static void write_block_size(char* ptr, unsigned char block_size);
+        static void write_block_flags(char* ptr, char type, char color, bool free);
 
         /** Get address of next free block (including header) on heap */
-        static void* getAddress(size_t size);
+        static char* getAddress(unsigned char alloc_size, unsigned char& block_size);
 
     public:
 
+        static std::set<char*> gray;
+
         /** Set flags for allocation and return address of block contents */
-        static void* allocBlock(size_t size, char type);
+        static void* allocBlock(unsigned char size, char type);
+        static void purgeHeap();
+
+        static void markGray(char* ptr);
+        static void markReferencesGray();
 
         static void print();
+        static void printStatus();
     };
 }
 

@@ -44,6 +44,8 @@ set(SOURCE_FILES
         src/vm/heap.cpp
         src/vm/heap.h
         src/lua/file.h
-        src/lua/file.cpp)
+        src/lua/file.cpp
+        src/vm/gc.cpp
+        src/vm/gc.h src/vm/gc_object.h)
 
 add_executable(lurun ${SOURCE_FILES})

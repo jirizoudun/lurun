@@ -122,4 +122,15 @@ namespace Lua {
                 return false;
         }
     }
+
+    void ValueObject::gc() const {
+        switch(type) {
+            case LUA_TSTRING:
+            case LUA_TTABLE: case LUA_TCLOSURE:
+            case LUA_TNATIVE: case LUA_TFILE:
+                VM::HeapManager::markGray((char*)value.p);
+                break;
+            default: break;
+        }
+    }
 }
