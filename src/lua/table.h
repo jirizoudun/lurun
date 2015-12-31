@@ -18,6 +18,7 @@ namespace Lua {
 
         Table();
         Table(const Table& other);
+        ~Table();
 
         void set(ValueObject key, ValueObject value);
         void set(const char * key, ValueObject value);

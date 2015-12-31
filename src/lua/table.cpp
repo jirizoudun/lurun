@@ -9,6 +9,9 @@ namespace Lua {
     Table::Table(const Table& other) {
         hash_part = new std::unordered_map<ValueObject,ValueObject,ValueObjectHasher>(*other.hash_part);
     }
+    Table::~Table() {
+        delete hash_part;
+    }
 
     void Table::set(ValueObject key, ValueObject value) {
         (*hash_part)[key] = value;
