@@ -76,6 +76,9 @@ namespace VM {
                 write_block_size(ptr + FULL_BLOCK_SIZE(alloc_size), (unsigned char)next_free_block_size);
                 write_block_flags(ptr + FULL_BLOCK_SIZE(alloc_size), 0, 0, 1);
             }
+        } else {
+            write_block_size(ptr + FULL_BLOCK_SIZE(alloc_size), 0);
+            write_block_flags(ptr + FULL_BLOCK_SIZE(alloc_size), 0, 0, 1);
         }
 
         write_block_size(ptr, alloc_size);
@@ -140,6 +143,7 @@ namespace VM {
                 // if possible, merge with previous free block
                 if (prev_block != NULL && prev_size + block_size + HEAP_HEAD_SIZE <= HEAP_MAX_BLOCK_SIZE) {
                     write_block_size(prev_block, (unsigned char)(prev_size + block_size + HEAP_HEAD_SIZE));
+                    prev_size = (unsigned char)(prev_size + block_size + HEAP_HEAD_SIZE);
                 // otherwise just mark block as free
                 } else {
                     write_block_flags(block, type, GC_WHITE, free);
