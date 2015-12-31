@@ -81,7 +81,7 @@ end
 function print_leaves(root)
     local c = root
     if root == nil then
-        print('Empty tree')
+--        print('Empty tree')
         return
     end
     -- Get first descendant
@@ -91,20 +91,20 @@ function print_leaves(root)
 
     while true do
         for i=0,c[num_keys] - 1 do
-            io.write(tostring(c[keys][i]))
-            io.write(' <> ')
-            io.write(tostring(c[descendants][i]))
-            io.write("; ")
+            print_output(tostring(c[keys][i]))
+            print_output(' <> ')
+            print_output(tostring(c[descendants][i]))
+            print_output("; ")
         end
 
         if c[descendants][order - 1] ~= nil then
-            io.write('| ')
+            print_output('| ')
             c = c[descendants][order - 1]
         else
             break
         end
     end
-    io.write('\n')
+    print_output('\n')
 end
 
 -- Utility function to give the height of the tree, which length in number of edges of the path from the root to any leaf.
@@ -142,7 +142,7 @@ function print_tree(root)
     local new_rank
 
     if root == nil then
-        print('Empty tree')
+--        print('Empty tree')
         return
     end
 
@@ -151,29 +151,29 @@ function print_tree(root)
     while queue ~= nil do
         n = dequeue()
         if n[parent] ~= nil and n == n[parent][descendants][0] then -- TODO checking
-            new_rank = path_to_root(root, n)
-            if new_rank ~= rank then
-                rank = new_rank
-                io.write('\n')
-            end
+        new_rank = path_to_root(root, n)
+        if new_rank ~= rank then
+            rank = new_rank
+            print_output('\n')
         end
-        io.write('(')
+        end
+        print_output('(')
         if istable(n) then
-            io.write(type(n))
+            print_output(type(n))
         else
-            io.write(tostring(n))
+            print_output(tostring(n))
         end
-        io.write(') ')
+        print_output(') ')
 
         for i=0,n[num_keys]-1 do
             if istable(n[descendants][i]) then
-                io.write(type(n[descendants][i]))
+                print_output(type(n[descendants][i]))
             else
-                io.write(tostring(n[descendants][i]))
+                print_output(tostring(n[descendants][i]))
             end
-            io.write(' ')
-            io.write(tostring(n[keys][i]))
-            io.write(' ')
+            print_output(' ')
+            print_output(tostring(n[keys][i]))
+            print_output(' ')
         end
 
         if not n[is_leaf] then
@@ -181,20 +181,20 @@ function print_tree(root)
                 enqueue(n[descendants][i])
             end
             if istable(n[descendants][n[num_keys]]) then
-                io.write(type(n[descendants][n[num_keys]]))
+                print_output(type(n[descendants][n[num_keys]]))
             else
-                io.write(tostring(n[descendants][n[num_keys]]))
+                print_output(tostring(n[descendants][n[num_keys]]))
             end
         else
             if istable(n[descendants][order - 1]) then
-                io.write(type(n[descendants][order - 1]))
+                print_output(type(n[descendants][order - 1]))
             else
-                io.write(tostring(n[descendants][order - 1]))
+                print_output(tostring(n[descendants][order - 1]))
             end
         end
-        io.write(' | ')
+        print_output(' | ')
     end
-    io.write('\n')
+    print_output('\n')
 end
 
 -- Traces the path from the root to a leaf, searching by key.  Displays information about the path.
@@ -203,20 +203,11 @@ function find_leaf(root, key)
     local pos = 0
     local c = root
     if c == nil then
-        print("Empty tree")
+--        print("Empty tree")
         return c
     end
 
     while not c[is_leaf] do
-        io.write('[')
-        for i=0,c[num_keys]-1 do
-            io.write(tostring(c[keys][i]))
-            io.write(' ')
-            pos = i
-        end
-        io.write(tostring(c[keys][pos]))
-        io.write('] ')
-
         pos = 0
         while pos < c[num_keys] do
             if key >= c[keys][pos] then
@@ -225,21 +216,8 @@ function find_leaf(root, key)
                 break
             end
         end
-
-        io.write(tostring(pos))
-        io.write(' ->\n')
         c = c[descendants][pos]
     end
-
-    io.write('Leaf [')
-    for i=0, c[num_keys]-2 do
-        io.write(tostring(c[keys][i]))
-        io.write(' ')
-        pos = i
-    end
-    io.write(tostring(c[keys][pos]))
-    io.write("] ->\n")
-
     return c
 end
 
@@ -290,15 +268,15 @@ end
 function find_and_print(root, key)
     local r = find(root, key)
     if r == nil then
-        io.write("Record not found under key ")
-        io.write(key)
-        io.write("\n")
+        print_output("Record not found under key ")
+        print_output(key)
+        print_output("\n")
     else
-        io.write("Record key ")
-        io.write(key)
-        io.write(", value ")
-        io.write(tostring(r))
-        io.write('\n')
+        print_output("Record key ")
+        print_output(key)
+        print_output(", value ")
+        print_output(tostring(r))
+        print_output('\n')
     end
 end
 
@@ -313,18 +291,19 @@ function find_and_print_range(root, key_start, key_end)
         print('None found')
     else
         for i=0, num_found - 1 do
-            io.write("Key ")
-            io.write(tostring(returned_keys[i]))
-            io.write(" value ")
-            io.write(type(returned_descendants[i]))
-            io.write("\n")
+            print_output("Key ")
+            print_output(tostring(returned_keys[i]))
+            print_output(" value ")
+            print_output(type(returned_descendants[i]))
+            print_output("\n")
         end
     end
 end
 
 -- Finds the appropriate place to split a node that is too big into two.
 function cut(l)
-    return math.ceil(l/2)
+    local res = math.ceil(l/2)
+    return res
 end
 
 -- INSERTION
@@ -396,7 +375,8 @@ function insert_into_parent(root, left, key, right)
 
     -- Case: new root
     if par == nil then
-        return insert_into_new_root(left, key, right)
+        local res = insert_into_new_root(left, key, right)
+        return res
     end
 
     -- Case: leaf or node
@@ -405,11 +385,13 @@ function insert_into_parent(root, left, key, right)
 
     -- Simple case: the new key fits into the node.
     if par[num_keys] < order - 1 then
-        return insert_into_node(root, par, left_index, key, right)
+        local res = insert_into_node(root, par, left_index, key, right)
+        return res
     end
 
     -- Harder case:  split a node in order to preserve the B+ tree properties.
-    return insert_into_node_after_splitting(root, par, left_index, key, right)
+    local res = insert_into_node_after_splitting(root, par, left_index, key, right)
+    return res
 end
 
 -- Inserts a new key and pointer to a node into a node, causing the node's size to exceed the order,
@@ -425,13 +407,13 @@ function insert_into_node_after_splitting(root, old_node, left_index, key, right
     local temp_keys = {}
     local temp_descendants = {}
 
---  First create a temporary set of keys and pointers
---  to hold everything in order, including
---  the new key and pointer, inserted in their
---  correct places.
---  Then create a new node and copy half of the
---  keys and pointers to the old node and
---  the other half to the new.
+    --  First create a temporary set of keys and pointers
+    --  to hold everything in order, including
+    --  the new key and pointer, inserted in their
+    --  correct places.
+    --  Then create a new node and copy half of the
+    --  keys and pointers to the old node and
+    --  the other half to the new.
     i = 0
     j = 0
     while i < old_node[num_keys] + 1 do
@@ -455,9 +437,9 @@ function insert_into_node_after_splitting(root, old_node, left_index, key, right
     temp_descendants[left_index + 1] = right
     temp_keys[left_index] = key
 
---  Create the new node and copy
---  half the keys and pointers to the
---  old and half to the new.
+    --  Create the new node and copy
+    --  half the keys and pointers to the
+    --  old and half to the new.
     split = cut(order)
     new_node = make_node()
     old_node[num_keys] = 0
@@ -488,7 +470,8 @@ function insert_into_node_after_splitting(root, old_node, left_index, key, right
         child[parent] = new_node
     end
 
-    return insert_into_parent(root, old_node, k_prime, new_node)
+    local res = insert_into_parent(root, old_node, k_prime, new_node)
+    return res
 end
 
 -- Inserts a new key and pointer to a new record into a leaf so as to exceed the tree's order, causing the leaf
@@ -555,7 +538,8 @@ function insert_into_leaf_after_splitting(root, leaf, key, descendant)
     new_leaf[parent] = leaf[parent]
     new_key = new_leaf[keys][0]
 
-    return insert_into_parent(root, leaf, new_key, new_leaf)
+    local res = insert_into_parent(root, leaf, new_key, new_leaf)
+    return res
 end
 
 function start_new_tree(key, value)
@@ -578,7 +562,8 @@ function insert(root, key, value)
 
     -- Case: the tree does not exist yet. Start a new tree.
     if root == nil then
-        return start_new_tree(key, value)
+        local res = start_new_tree(key, value)
+        return res
     end
 
     -- Case: the tree already exists.
@@ -589,7 +574,8 @@ function insert(root, key, value)
         return root
     end
 
-    return insert_into_leaf_after_splitting(root, leaf, key, value)
+    local res = insert_into_leaf_after_splitting(root, leaf, key, value)
+    return res
 end
 
 -- DELETION
@@ -734,10 +720,10 @@ function coalesce_nodes(root, n, neighbor, neighbor_index, k_prime)
         end
 
 
-    -- In a leaf, append the keys and pointers of
-    -- n to the neighbor.
-    -- Set the neighbor's last pointer to point to
-    -- what had been n's right neighbor.
+        -- In a leaf, append the keys and pointers of
+        -- n to the neighbor.
+        -- Set the neighbor's last pointer to point to
+        -- what had been n's right neighbor.
     else
         j=0
         i=neighbor_insertion_index
@@ -786,10 +772,10 @@ function redistribute_nodes(root, n, neighbor, neighbor_index, k_prime_index, k_
             n[keys][0] = neighbor[keys][neighbor[num_keys] - 1]
             n[parent][keys][k_prime_index] = n[keys][0]
         end
-    -- Case: n is the leftmost child.
-    -- Take a key-pointer pair from the neighbor to the right.
-    -- Move the neighbor's leftmost key-pointer pair
-    -- to n's rightmost position.
+        -- Case: n is the leftmost child.
+        -- Take a key-pointer pair from the neighbor to the right.
+        -- Move the neighbor's leftmost key-pointer pair
+        -- to n's rightmost position.
     else
         if n[is_leaf] then
             n[keys][n[num_keys]] = neighbor[keys][0]
@@ -832,7 +818,8 @@ function delete_entry(root, n, key, descendant)
 
     -- Case: deletion from the root
     if n == root then
-        return adjust_root(root)
+        local res = adjust_root(root)
+        return res
     end
 
     -- Case:  deletion from a node below the root.
@@ -880,13 +867,15 @@ function delete_entry(root, n, key, descendant)
 
     -- Coalescence
     if neighbor[num_keys] + n[num_keys] < capacity then
---        print("coalesce")
-        return coalesce_nodes(root, n, neighbor, neightbor_index, k_prime)
+        --        print("coalesce")
+        local res = coalesce_nodes(root, n, neighbor, neightbor_index, k_prime)
+        return res
 
-    -- Redistribution
+        -- Redistribution
     else
---        print("redistribute")
-        return redistribute_nodes(root, n, neighbor, neightbor_index, k_prime_index, k_prime)
+        --        print("redistribute")
+        local res = redistribute_nodes(root, n, neighbor, neightbor_index, k_prime_index, k_prime)
+        return res
     end
 end
 
@@ -903,109 +892,316 @@ function delete(root, key)
     return root
 end
 
--- DEBUG part
-rt = make_node()
-l = make_node()
-r = make_node()
-l1 = make_leaf()
-l2 = make_leaf()
-r1 = make_leaf()
-r2 = make_leaf()
+-- LOADING FROM FILE
+-- Helper functions
+function get_string_part(str, position, delimiter)
+    local i = 1
+    local j = 1
+    local count = 0
+    local c = string.sub(str, i, i)
+    while c ~= "" and count ~= position do
+        if c == delimiter then
+            count = count + 1
+        end
 
--- root
-rt[keys][0] = 7
-rt[descendants][0] = l
-rt[descendants][1] = r
-rt[num_keys] = 1
+        if position == count then
+            i = i + 1
+            break
+        end
 
--- left
-l[keys][0] = 4
-l[descendants][0] = l1
-l[descendants][1] = l2
-l[num_keys] = 1
-l[parent] = rt
+        i = i + 1
+        c = string.sub(str, i, i)
+    end
 
--- right
-r[keys][0] = 10
-r[descendants][0] = r1
-r[descendants][1] = r2
-r[num_keys] = 1
-r[parent] = rt
+    -- i is a start of needed part
+    j = i + 1
+    local c = string.sub(str, j, j)
+    while c ~= "" do
+        if c == delimiter then
+            j = j - 1
+            break
+        end
 
--- leaves
-for i=0,2 do
-    l1[keys][i] = i+1
-    l1[descendants][i] = tostring(-1 * (i+1))
+        j = j + 1
+        c = string.sub(str, j, j)
+    end
+
+    -- j is a end of needed part
+    local s = string.sub(str, i, j)
+    return s
 end
-l1[num_keys] = 3
-l1[parent] = l
 
-for i=0,2 do
-    l2[keys][i] = i+4
-    l2[descendants][i] = tostring(-1 * (i+4))
+-- Parsing arguments
+function parse_args(arg)
+    local i = 1
+    local in_file
+    local out_file
+
+    while arg[i] ~= nil do
+        if arg[i] == "-i" then
+            in_file = arg[i + 1]
+            i = i + 1
+        elseif arg[i] == "-o" then
+            out_file = arg[i + 1]
+            i = i + 1
+        end
+        i = i + 1
+    end
+
+    return in_file, out_file
 end
-l2[num_keys] = 3
-l2[parent] = l
 
-for i=0,2 do
-    r1[keys][i] = i+7
-    r1[descendants][i] = tostring(-1 * (i+7))
+-- Returns input function which depends on ifile status
+function get_input_function(ifile)
+
+    local stdin_f = function()
+        local str = io.read()
+        return str
+    end
+
+    if ifile == nil then
+        return stdin_f
+    end
+
+    local f = io.open(ifile, "r")
+
+    if f == nil then
+        return stdin_f
+    end
+
+    return function()
+        local str = f.read(f)
+        return str
+    end, f -- returning opened file, so we can close it when reading is done
 end
-r1[num_keys] = 3
-r1[parent] = r
 
-for i=0,2 do
-    r2[keys][i] = i+10
-    r2[descendants][i] = tostring(-1 * (i+10))
+-- Returns output function which depends on ifile status
+function get_output_function(ofile)
+
+    local stdout_f = function(str)
+        io.write(str)
+    end
+
+    if ofile == nil then
+        return stdout_f
+    end
+
+    local f = io.open(ofile, "w")
+
+    if f == nil then
+        return stdout_f
+    end
+
+    local func = function(str)
+        f.write(f, str)
+    end
+
+    return func, f -- returning opened file, so we can close it when writing is done
 end
-r2[num_keys] = 3
-r2[parent] = r
 
-l1[descendants][3] = l2
-l2[descendants][3] = r1
-r1[descendants][3] = r2
-r2[descendants][3] = nil
+print("##############################################")
+--print("Alright world, it's time to take you on!")
+print("     Sometimes you eat the bear(VM) and\n  sometimes the bear(VM), well, he eats you.")
+print("##############################################\n")
 
-print("Height: ", height(rt))
-print("Length of path from l1 to rt: ", path_to_root(rt, l1))
-print("Length of path from r2 to rt: ", path_to_root(rt, r2))
-print("Length of path from l to rt: ", path_to_root(rt, l))
+print("----------------------------------------------")
+print("Usage:")
+print("to insert:\ti key<number> value")
+print("to delete:\td key<number>")
+print("to find:\tf key<number>")
+print("to print tree:\tp")
+print("to quit:\tq")
 
-print("Printing whole tree:")
-print_tree(rt)
+print("----------------------------------------------\n")
 
-print("Printing only leaves:")
-print_leaves(rt)
+print("Initialization")
 
--- DELETION
---dr = rt
---delete(dr, 1)
---print_tree(dr)
+local ifile_str, ofile_str = parse_args(arg) -- TODO lurun arguments
+
+if ifile_str ~= nil then
+    print("Input file: ", ifile_str)
+end
+
+if ofile_str ~= nil then
+    print("Output file: ", ofile_str, "\n")
+end
+
+-- in_file have to be closed if it's not nil
+get_input, in_file = get_input_function(ifile_str) -- TODO lurun io.read()
+-- iout_file have to be closed if it's not nil
+print_output, out_file = get_output_function(ofile_str)
+
+local stdin_reading = in_file == nil
+
+local tree_root
+
+if stdin_reading then io.write("> ") end
+local s_in = get_input()
+while s_in ~= nil do
+    local c = string.sub(s_in, 1, 1) -- first character of input
+
+    if c == "q" then                                    -- QUIT
+        print_output("Closing KV Storage..\n")
+        break
+    elseif c == "d" then                                -- DELETE
+        local key = tonumber(get_string_part(s_in, 1, " "))
+
+        if tree_root ~= nil and key ~= nil then
+            print_output("Deleting " .. key .. "\n")
+            tree_root = delete(tree_root, key)
+        end
+    elseif c == "i" then                                -- INSERT
+        local key = tonumber(get_string_part(s_in, 1, " "))
+        local val = get_string_part(s_in, 2, " ")
+
+        if key ~= nil then
+            print_output("Inserting key " .. key .. " value " .. val .. "\n")
+            tree_root = insert(tree_root, key, val)
+        else
+            print_output("Inserting key was not successfull!\nProbably invalid command:\n" .. s_in .. "\n")
+        end
+
+    elseif c == "p" then                                -- PRINT_TREE
+        print_output("Printing tree:\n")
+        print_tree(tree_root)
+    elseif c == "f" then
+        local key = tonumber(get_string_part(s_in, 1, " "))
+
+        if key ~= nil then
+            local val = find(tree_root, key)
+
+            if val ~= nil then
+                print_output("Found " .. val .. " for key " .. key .. "\n")
+            else
+                print_output("Value for key " .. key .. " not found\n")
+            end
+        else
+            print_output("Finding key was not successfull!\nProbably invalid command:\n" .. s_in .. "\n")
+        end
+    end
+
+    if stdin_reading then io.write("> ") end
+    s_in = get_input()
+end
+
+if in_file ~= nil then
+    io.close(in_file)
+end
+
+if out_file ~= nil then
+    io.close(out_file)
+end
+
+--print(get_input())
+--print_output("hi guys")
+
+--print_output = get_output_function(ofile_str)
+
+-- Using stdin
+
+-- Using input file
+
+--for k, v in pairs( arg ) do
+--    print(k, v)
+--end
+
 --
---delete(dr, 2)
---print_tree(dr)
-
-print("\nINSERTION\n")
-
-ir = nil
-local num = 9
-
-for i=0,num do
-    print("insert",i+1)
-    ir = insert(ir, i + 1, -1 * (i + 1))
-    print(ir)
-    print_tree(ir)
-    print("\n####################")
-end
-
-print("\nDELETION\n")
-
-for i=0,num do
-    print("delete", i + 1)
-    ir = delete(ir, i + 1)
-    print_tree(ir)
-    print("\n####################")
-end
+---- DEBUG part
+--rt = make_node()
+--l = make_node()
+--r = make_node()
+--l1 = make_leaf()
+--l2 = make_leaf()
+--r1 = make_leaf()
+--r2 = make_leaf()
+--
+---- root
+--rt[keys][0] = 7
+--rt[descendants][0] = l
+--rt[descendants][1] = r
+--rt[num_keys] = 1
+--
+---- left
+--l[keys][0] = 4
+--l[descendants][0] = l1
+--l[descendants][1] = l2
+--l[num_keys] = 1
+--l[parent] = rt
+--
+---- right
+--r[keys][0] = 10
+--r[descendants][0] = r1
+--r[descendants][1] = r2
+--r[num_keys] = 1
+--r[parent] = rt
+--
+---- leaves
+--for i=0,2 do
+--    l1[keys][i] = i+1
+--    l1[descendants][i] = tostring(-1 * (i+1))
+--end
+--l1[num_keys] = 3
+--l1[parent] = l
+--
+--for i=0,2 do
+--    l2[keys][i] = i+4
+--    l2[descendants][i] = tostring(-1 * (i+4))
+--end
+--l2[num_keys] = 3
+--l2[parent] = l
+--
+--for i=0,2 do
+--    r1[keys][i] = i+7
+--    r1[descendants][i] = tostring(-1 * (i+7))
+--end
+--r1[num_keys] = 3
+--r1[parent] = r
+--
+--for i=0,2 do
+--    r2[keys][i] = i+10
+--    r2[descendants][i] = tostring(-1 * (i+10))
+--end
+--r2[num_keys] = 3
+--r2[parent] = r
+--
+--l1[descendants][3] = l2
+--l2[descendants][3] = r1
+--r1[descendants][3] = r2
+--r2[descendants][3] = nil
+--
+--print("Height: ", height(rt))
+--print("Length of path from l1 to rt: ", path_to_root(rt, l1))
+--print("Length of path from r2 to rt: ", path_to_root(rt, r2))
+--print("Length of path from l to rt: ", path_to_root(rt, l))
+--
+--print("Printing whole tree:")
+--print_tree(rt)
+--
+--print("Printing only leaves:")
+--print_leaves(rt)
+--
+--
+--print("\nINSERTION\n")
+--
+--ir = nil
+--local num = 9
+--
+--for i=0,num do
+--    print("insert",i+1)
+--    ir = insert(ir, i + 1, -1 * (i + 1))
+--    print(type(ir))
+--    print_tree(ir)
+--    print("\n####################")
+--end
+--
+--print("\nDELETION\n")
+--
+--for i=0,num do
+--    print("delete", i + 1)
+--    ir = delete(ir, i + 1)
+--    print_tree(ir)
+--    print("\n####################")
+--end
 
 --for i=0,num do
 --    print("delete", num - i + 1)

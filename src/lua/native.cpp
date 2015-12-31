@@ -223,6 +223,7 @@ namespace Lua {
                     {
                         base_res[0] = ValueObject(); // LUA_TNIL
                     }
+                    return 1;
                 }
                 else {
 
@@ -234,6 +235,19 @@ namespace Lua {
                 assert(npar == 1);
                 base_res[0] = ValueObject((int)ceil(VO_D(stack[1])));
                 return 1;
+            }
+
+            case LUA_NAT_STRING_SUB: {
+                assert(npar == 3 && IS_STRING(stack[1]));
+                string str = ((StringObject*)VO_P(stack[1]))->toString();
+
+                long long pos = VO_I(stack[2]) - 1; // Lua indexing from 1
+                long long len = VO_I(stack[3]) - 1 - pos + 1;
+
+                string sub = str.substr(pos, len);
+                base_res[0] = ValueObject(LUA_TSTRING, ALLOC_STRING(sub));
+                return 1;
+                break;
             }
 
             default: {

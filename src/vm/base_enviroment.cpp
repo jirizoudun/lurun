@@ -35,9 +35,18 @@ namespace BaseEnv {
         env->set("math", ValueObject(LUA_TTABLE, math));
     }
 
+    void initStringTable(Table *env) {
+        Table *str = (Table*)ALLOC_TABLE();
+        str->set("sub",         ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_STRING_SUB)));
+
+        env->set("string",ValueObject(LUA_TTABLE, str));
+    }
+
+
     void initEnviroment(Table *env) {
         initBaseFunctions(env);
         initIOTable(env);
         initMathTable(env);
+        initStringTable(env);
     }
 }
