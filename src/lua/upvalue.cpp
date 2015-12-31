@@ -46,4 +46,10 @@ namespace Lua {
         if (prev != NULL) {prev->next = next;}
         if (next != NULL) {next->prev = prev;}
     }
+
+    void UpvalueRef::gc() const {
+        if (voPointer != NULL) { voPointer->gc(); }
+        if (next != NULL) { VM::HeapManager::markGray((char*)next); }
+        if (prev != NULL) { VM::HeapManager::markGray((char*)prev); }
+    }
 }

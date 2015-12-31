@@ -9,7 +9,7 @@
 #include "../common.h"
 
 namespace Lua {
-    class File {
+    class File: public GCObject {
         bool opened;
         char path[MAX_FILENAME_LENGTH];
         FILE *f;
@@ -32,6 +32,8 @@ namespace Lua {
         std::string getPathString();
 
         void print();
+
+        void gc() const;
     };
 }
 

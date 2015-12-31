@@ -1,6 +1,3 @@
-//
-// Created by Tomas on 15. 11. 2015.
-//
 
 #include "../common.h"
 
@@ -26,6 +23,12 @@ namespace Lua {
     Function::~Function() {
         delete func_name;
         delete code;
+
+        for (int i=0; i<constants->count; i++) {
+            if (IS_STRING(constants->get(i))) {
+                delete ((StringObject*)VO_P(constants->get(i)));
+            }
+        }
         delete constants;
         delete upvaluesdescs;
 

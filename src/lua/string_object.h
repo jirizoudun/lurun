@@ -6,7 +6,7 @@ namespace Lua {
 
     using std::string;
 
-    class StringObject {
+    class StringObject: public GCObject {
 
         /*
          * Each StringObject creates it's own copy of string, for simplicity
@@ -31,6 +31,11 @@ namespace Lua {
         size_t getHash()   const;
 
         bool operator==(const StringObject & other) const;
+
+        void gc() const {
+            // Do nothing, has no pointers to mark gray
+            // str is unique for this Object and does not need to be GC'd
+        }
     };
 }
 

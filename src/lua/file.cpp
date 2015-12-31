@@ -110,4 +110,10 @@ namespace Lua {
         t->set("read", ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_FILE_READ)));
         return t;
     }
+
+    void File::gc() const {
+        if (metatable != NULL) {
+            VM::HeapManager::markGray((char*)metatable);
+        }
+    }
 }

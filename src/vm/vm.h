@@ -9,9 +9,6 @@
 
 #define LFIELDS_PER_FLUSH 50 // used in lists
 
-#define HEAP_SIZE 268435456 // 256 MB
-#define HEAP_HEAD_SIZE 2 // B
-
 namespace VM {
 
     class VM {

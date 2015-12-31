@@ -4,68 +4,198 @@
 namespace VM {
     using namespace Lua;
 
-    int HeapManager::next_free_block = 0;
     char HeapManager::heap[HEAP_SIZE];
+    char* HeapManager::next_free_block = heap;
 
-    void HeapManager::read_block_head(char* ptr, unsigned char& block_size, char& type, bool& free) {
-        block_size = (unsigned char)ptr[0];
-        char flags = ptr[1];
+    set<char*> HeapManager::gray;
+
+    void HeapManager::read_block_size(char* ptr, unsigned char& block_size) {
+        block_size = (unsigned char)*ptr;
+    }
+    void HeapManager::read_block_flags(char* ptr, char& type, char& color, bool& free) {
+        char flags = *(ptr+1);
         type =  (flags & (char)0b11111000) >> 3;
-        free = !(flags & (char)1);
+        color = (flags & (char)0b00000110) >> 1;
+        free = !(flags & (char)0b00000001);
     }
-    void HeapManager::write_block_head(char* ptr, unsigned char block_size, char type) {
+
+    void HeapManager::write_block_size(char* ptr, unsigned char block_size) {
+        *ptr = block_size;
+    }
+    void HeapManager::write_block_flags(char* ptr, char type, char color, bool free) {
         char flags = 0;
-        flags |= (type << 3);
-        flags |= (char)1;
-
-        ptr[0] = block_size;
-        ptr[1] = flags;
+        flags |= ((type  << 3) & 0b11111000);
+        flags |= ((color << 1) & 0b00000110);
+        flags |= (!free        & 0b00000001);
+        *(ptr+1) = flags;
     }
 
-    void* HeapManager::getAddress(size_t alloc_size) {
-        unsigned char block_size;
-        char type;
+    char* HeapManager::getAddress(unsigned char alloc_size, unsigned char& block_size) {
+        char type,color;
         bool free;
 
-        int p = next_free_block;
+        int p = (int)(next_free_block - heap);
         while (p < HEAP_SIZE - HEAP_HEAD_SIZE - alloc_size) {
-            read_block_head(heap+p, block_size, type, free);
+            read_block_size(heap+p, block_size);
+            read_block_flags(heap+p, type, color, free);
 
             if (free && (block_size == 0 || alloc_size <= block_size)) { return heap+p; }
-            p += HEAP_HEAD_SIZE + block_size;
+            p += FULL_BLOCK_SIZE(block_size);
         }
-
         return NULL;
     }
 
-    void* HeapManager::allocBlock(size_t alloc_size, char type) {
+    void* HeapManager::allocBlock(unsigned char alloc_size, char type) {
         assert(alloc_size <= 255);
-        void* ptr = getAddress(alloc_size);
+        unsigned char block_size;
+        char* ptr = getAddress(alloc_size, block_size);
 
         if (ptr == NULL) {
             printf("We ran out of memory\n");
             exit(1);
         }
 
-        write_block_head((char*)ptr, (char)alloc_size, type);
+        unsigned char next_free_block_size = 0;
+        if (block_size != 0) {
+            next_free_block_size = (unsigned char)(block_size - alloc_size - HEAP_HEAD_SIZE);
 
-        // TODO handle case when block is not last free block
-        // TODO set next free block
+            // if new free block would be smaller than minimum,
+            // use whole block as is
+            if (next_free_block_size < HEAP_MIN_BLOCK_SIZE) {
+                alloc_size = block_size;
+            }
+        }
 
-        return (char*)ptr + HEAP_HEAD_SIZE;
+        write_block_size(ptr, alloc_size);
+        write_block_flags(ptr, type, GC_WHITE, false);
+
+        if (next_free_block == ptr) {
+            next_free_block += FULL_BLOCK_SIZE(alloc_size);
+            if (block_size != 0) {
+                write_block_size(next_free_block, next_free_block_size);
+                write_block_flags(next_free_block, 0, 0, 1);
+            }
+        }
+
+        return ptr + HEAP_HEAD_SIZE;
+    }
+
+    void HeapManager::purgeHeap() {
+
+        unsigned char block_size;
+        char type, color;
+        bool free;
+
+        next_free_block = NULL;
+        char* prev_block = NULL;
+        unsigned char prev_size = 0;
+
+        int p = 0;
+        while (p < HEAP_SIZE - HEAP_HEAD_SIZE - HEAP_MIN_BLOCK_SIZE) {
+            char* block = heap+p;
+
+            read_block_size(block, block_size);
+
+            if (block_size == 0) { // reached the end of used space
+                if (prev_block != NULL) { write_block_size(prev_block, 0); }
+                break;
+            }
+
+            read_block_flags(block, type, color, free);
+
+            // free white blocks
+            if (!free && color == GC_WHITE) {
+                switch(type) {
+                    case GC_TABLE:   ((Table*)       (block + HEAP_HEAD_SIZE))->~Table();        break;
+                    case GC_UPVAL:   ((UpvalueRef*)  (block + HEAP_HEAD_SIZE))->~UpvalueRef();   break;
+                    case GC_CLOSURE: ((Closure*)     (block + HEAP_HEAD_SIZE))->~Closure();      break;
+                    case GC_STRING:  ((StringObject*)(block + HEAP_HEAD_SIZE))->~StringObject(); break;
+                    case GC_NATIVE:  ((Native*)      (block + HEAP_HEAD_SIZE))->~Native();       break;
+                    case GC_FILE:    ((File*)        (block + HEAP_HEAD_SIZE))->~File();         break;
+                    default: break;
+                }
+                free = true;
+            }
+
+            if (!free) {
+                write_block_flags(block, type, GC_WHITE, free);
+                prev_block = NULL;
+            } else {
+                if (next_free_block == NULL) { next_free_block = block; }
+
+                // if possible, merge with previous free block
+                if (prev_block != NULL && prev_size + block_size + HEAP_HEAD_SIZE <= HEAP_MAX_BLOCK_SIZE) {
+                    write_block_size(prev_block, (unsigned char)(prev_size + block_size + HEAP_HEAD_SIZE));
+                // otherwise just mark block as free
+                } else {
+                    write_block_flags(block, type, GC_WHITE, free);
+                    prev_block = block;
+                    prev_size = block_size;
+                }
+            }
+
+            p += FULL_BLOCK_SIZE(block_size);
+        }
+    }
+
+    void HeapManager::markGray(char* ptr) {
+        if (gray.find(ptr) == gray.end()) {
+            char dummy_type;
+            char color;
+            bool dummy_free; // TODO sanity check free?
+
+            char* block_ptr = ptr - HEAP_HEAD_SIZE;
+
+            // if not gray check if white
+            read_block_flags(block_ptr, dummy_type, color, dummy_free);
+
+            if (color == GC_WHITE) {
+                write_block_flags(block_ptr, dummy_type, GC_GRAY, dummy_free);
+                gray.insert(ptr);
+            }
+        }
+    }
+
+    void HeapManager::markReferencesGray() {
+        char type, dummy_color;
+        bool dummy_free;
+
+        for (std::set<char*>::iterator ptr = gray.begin(); ptr != gray.end();) {
+            char* block_ptr = (*ptr) - HEAP_HEAD_SIZE;
+            read_block_flags(block_ptr, type, dummy_color, dummy_free);
+
+            ((GCObject*)*ptr)->gc(); // mark all references from the object gray
+            write_block_flags(block_ptr, type, GC_BLACK, dummy_free);
+
+            ptr = gray.erase(ptr);
+        }
     }
 
     void HeapManager::print() {
 
         unsigned char block_size;
         char type;
+        char color;
         bool free;
         int p = 0;
         while(p < HEAP_SIZE - HEAP_HEAD_SIZE) {
-            read_block_head(heap+p, block_size, type, free);
-            if (block_size == 0) {break;} // reached free space at the and of the heap
+            read_block_size(heap+p, block_size);
+            read_block_flags(heap+p, type, color, free);
 
-            printf("Block [%i] @%i: %iB", free, p, block_size);
+            if (block_size == 0) { // reached free space at the and of the heap
+                double left = (HEAP_SIZE - p)/1024.;
+                printf("%.3f kB (%.3f MB) left\n\n", left, left/1024.);
+                break;
+            }
+
+            switch(color) {
+                case GC_WHITE: printf("W"); break;
+                case GC_BLACK: printf("B"); break;
+                case GC_GRAY:  printf("G"); break;
+                default: break;
+            }
+
+            printf(" Block [%i] @%i: %iB", free, p, block_size);
             if (!free) {
                 switch(type) {
                     case GC_TABLE:   printf(", table"); break;
@@ -82,4 +212,39 @@ namespace VM {
             p += HEAP_HEAD_SIZE + block_size;
         }
     }
+
+    void HeapManager::printStatus() {
+
+        int free_blocks = 0, used_blocks = 0;
+        int free_memory = 0, used_memory = 0;
+
+        unsigned char block_size;
+        char type, color;
+        bool free;
+        int p = 0;
+        while(p < HEAP_SIZE - HEAP_HEAD_SIZE) {
+            read_block_size(heap+p, block_size);
+            read_block_flags(heap+p, type, color, free);
+
+            if (block_size == 0) { // reached free space at the and of the heap
+                printf("Free: %.3f kB (%i blocks), used: %.3f kB (%i blocks)\n",
+                       free_memory/1024., free_blocks,
+                       used_memory/1024., used_blocks);
+                double left = (HEAP_SIZE - p)/1024.;
+                printf("%.3f kB (%.3f MB) left\n\n", left, left/1024.);
+                break;
+            }
+
+            if (free) {
+                free_blocks++;
+                free_memory += block_size;
+            } else {
+                used_blocks++;
+                used_memory += block_size;
+            }
+
+            p += HEAP_HEAD_SIZE + block_size;
+        }
+    }
+
 }

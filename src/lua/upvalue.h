@@ -20,7 +20,7 @@ namespace Lua {
     /**
      * Value of given upvalue. Only one per value in whole program.
      */
-    struct UpvalueRef {
+    struct UpvalueRef: public GCObject {
 
         UpvalueRef(ValueObject* ptr, UpvalueRef* next);
         UpvalueRef(ValueObject vo, UpvalueRef* next);
@@ -38,6 +38,8 @@ namespace Lua {
         ValueObject getValue();
 
         void close();
+
+        void gc() const;
     };
 }
 

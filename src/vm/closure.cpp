@@ -11,4 +11,10 @@ namespace VM {
         delete upvalues;
         // do not delete prototype here
     }
+
+    void Closure::gc() const {
+        for (std::vector<UpvalueRef*>::iterator it = upvalues->begin(); it != upvalues->end(); ++it) {
+            HeapManager::markGray((char*)*it);
+        }
+    }
 }

@@ -6,7 +6,7 @@ namespace VM {
 
     using namespace Lua;
 
-    class Closure {
+    class Closure: public GCObject {
 
     public:
         Function* proto;
@@ -14,6 +14,8 @@ namespace VM {
 
         Closure(Function* function);
         ~Closure();
+
+        void gc() const;
     };
 
 }

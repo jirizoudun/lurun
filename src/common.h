@@ -96,8 +96,10 @@ typedef unsigned char byte;
 #include <cstring>
 #include <string>
 #include <vector>
+#include <set>
 #include <unordered_map>
 #include <assert.h>
+#include "vm/gc_object.h"
 #include "lua/lua.h"
 #include "header.h"
 #include "reader.h"

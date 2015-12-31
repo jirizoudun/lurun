@@ -38,10 +38,17 @@ namespace VM {
     void VM::run() {
         execute(topCallFrame);
 
-#if DEBUG_HEAP
-        printf("\nHEAP:\n");
-        HeapManager::print();
-#endif
+        /*
+        GC::root(stack, topCallFrame->top, topCallFrame);
+        GC::mark();
+        GC::sweep();
+         */
+
+        //GC::root(stack, topCallFrame->top, NULL);
+        //GC::mark();
+        GC::sweep();
+
+        //HeapManager::print();
 
         // delete initial frame
         delete topCallFrame;

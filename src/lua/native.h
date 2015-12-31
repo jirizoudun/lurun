@@ -29,7 +29,7 @@ typedef enum NATIVE_TYPE {
 }NativeType;
 
 namespace Lua {
-    class Native {
+    class Native: public GCObject {
         NativeType type;
 
     public:
@@ -40,6 +40,10 @@ namespace Lua {
         void print();
 
         NativeType getType();
+
+        void gc() const {
+            // Do nothing, has no pointers to mark gray
+        }
     };
 }
 
