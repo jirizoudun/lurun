@@ -1027,7 +1027,7 @@ if ofile_str ~= nil then
 end
 
 -- in_file have to be closed if it's not nil
-get_input, in_file = get_input_function(ifile_str) -- TODO lurun io.read()
+get_input, in_file = get_input_function(ifile_str)
 -- iout_file have to be closed if it's not nil
 print_output, out_file = get_output_function(ofile_str)
 

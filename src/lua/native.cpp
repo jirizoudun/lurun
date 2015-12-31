@@ -1,3 +1,4 @@
+#include <iostream>
 #include "../common.h"
 
 namespace Lua {
@@ -88,30 +89,6 @@ namespace Lua {
                 }
                 break;
 
-            case LUA_NAT_RAWGET:
-                assert(npar == 2);
-                if (nres >= 0) {
-                    assert(IS_TABLE(stack[1]));
-                    Table *t = ((Table *)VO_P(stack[1]));
-                    ValueObject vo = t->get(stack[2]);
-
-                    for(int i = 0; i <= nres; i++) {
-                        base_res[i] = vo;
-                    }
-                    return nres;
-                }
-                assert(false);
-                break;
-
-            case LUA_NAT_RAWSET: {
-                assert(npar == 3);
-                assert(IS_TABLE(stack[1]));
-
-                Table *t = (Table *)VO_P(stack[1]);
-                t->set(stack[2], stack[3]);
-                return 0;
-            }
-
             /**
              * gets table and key
              * returns next key and value
@@ -163,6 +140,17 @@ namespace Lua {
                     printf(i+1 <= npar ? "\t" : "");
                 }
                 return 0;
+
+            case LUA_NAT_IO_READ: {
+                assert(nres >= 1 && npar == 0);
+                string line;
+                getline(std::cin, line);
+
+                for (int i = 0; i < nres; i++) {
+                    base_res[i] = ValueObject(LUA_TSTRING, ALLOC_STRING(line));
+                }
+                return nres;
+            }
 
             case LUA_NAT_IO_OPEN: {
                 assert(npar == 2);
