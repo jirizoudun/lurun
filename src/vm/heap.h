@@ -10,7 +10,6 @@ using namespace Lua;
 
     class HeapManager {
 
-        static char heap[HEAP_SIZE];
 
         static char* next_free_block;
 
@@ -25,10 +24,11 @@ using namespace Lua;
 
     public:
 
+        static char heap[HEAP_SIZE];
         static std::set<char*> gray;
 
         /** Set flags for allocation and return address of block contents */
-        static void* allocBlock(unsigned char size, char type);
+        static void* allocBlock(unsigned char size, char type, bool protect);
         static void purgeHeap();
 
         static void markGray(char* ptr);

@@ -21,6 +21,7 @@
 #define GC_WHITE 0
 #define GC_BLACK 1
 #define GC_GRAY  2
+#define GC_PROTECTED 3
 
 #include "closure.h"
 #include "call_frame.h"
@@ -36,6 +37,9 @@
 #define ALLOC_NATIVE(TYPE)       ((void*)(new (ALLOC_BLOCK(sizeof(Native),       GC_NATIVE))   Native(TYPE)))
 #define ALLOC_FILE()             ((void*)(new (ALLOC_BLOCK(sizeof(File),         GC_FILE))     File()))
 
-#define ALLOC_BLOCK(SIZE, TYPE)  (::VM::HeapManager::allocBlock(SIZE, TYPE))
+#define ALLOC_PROTECTED_STRING(STR) ((void*)(new (ALLOC_PROTECTED_BLOCK(sizeof(StringObject), GC_STRING))   StringObject(STR)))
+
+#define ALLOC_BLOCK(SIZE, TYPE)           (::VM::HeapManager::allocBlock(SIZE, TYPE, false))
+#define ALLOC_PROTECTED_BLOCK(SIZE, TYPE) (::VM::HeapManager::allocBlock(SIZE, TYPE, true))
 
 #endif //LURUN_VM_COMMON_H

@@ -37,7 +37,7 @@ namespace VM {
 
     void VM::run() {
         execute(topCallFrame);
-
+exit(1);
         /*
         GC::root(stack, topCallFrame->top, topCallFrame);
         GC::mark();
@@ -77,7 +77,7 @@ namespace VM {
 
 #if DEBUG
             printf("### ");
-            printf("%i: ", ip);
+            printf("%i %i: ", gc++, ip);
             inst->print(); // ; debug
 #endif
 
@@ -283,8 +283,12 @@ namespace VM {
                     for (int i = RA; i <= RA + RB - 2; i++) {
                         stack[R++] = stack[base + i];
                     }
-
                     ci->top = R - 1;
+
+                    // clean after yourself
+                    while (R < base + ci->size) {
+                        stack[R++].type = LUA_TNIL;
+                    }
                     return;
                 }
                 case OP_MOVE: // RA = RB
@@ -448,6 +452,14 @@ namespace VM {
                     break;
             }
 
+
+            GC::root(stack, ci);
+            GC::mark();
+            if (HeapManager::gray.empty()) {
+                GC::sweep();
+            }
+            //GC::sweep();
+
 #if DEBUG_STACK
             printStack(ci); // ; debug
 #endif
@@ -550,7 +562,10 @@ namespace VM {
 
     void VM::printStack(CallFrame * ci) const {
         printf("\n---- STACK -----------------\n");
-        for (int i=0;i < ci->base + ci->size;i++) {
+        for (int i=0;i < ci->stack_max;i++) {
+            if (i == ci->base + ci->size) {
+                printf("+\n");
+            }
             printf("%3i ", i - ci->base);
             printf((i == ci->top ? "> " : "| "));
             /*if (stack[i] == NULL) {
