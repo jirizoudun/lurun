@@ -61,7 +61,7 @@ namespace Lua {
     }
 
     void Table::print() {
-        printf("Table <%zu elements, mt: %i>\n", hash_part->size(), metatable != NULL);
+        printf("Table %i <%zu elements, mt: %i>\n", ((char*)this - (char*)VM::HeapManager::heap), hash_part->size(), metatable != NULL);
 #if DEBUG_TABLE_CONTENTS
         for (auto it = hash_part->begin(); it != hash_part->end(); ++it) {
             printf("\t");

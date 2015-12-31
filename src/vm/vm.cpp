@@ -439,6 +439,22 @@ namespace VM {
                     break;
             }
 
+
+            /*
+            if (inst->getOpCode() == OP_JMP) {
+                HeapManager::print();
+            }*/
+
+            GC::root(stack, ci);
+            GC::mark();
+
+            //HeapManager::printStatus();
+
+            if (HeapManager::gray.empty()) {
+                GC::sweep();
+            }
+            //GC::sweep();
+
 #if DEBUG_STACK
             printStack(ci); // ; debug
 #endif
@@ -532,7 +548,10 @@ namespace VM {
 
     void VM::printStack(CallFrame * ci) const {
         printf("\n---- STACK -----------------\n");
-        for (int i=0;i < ci->base + ci->size;i++) {
+        for (int i=0;i < ci->stack_max;i++) {
+            if (i == ci->base + ci->size) {
+                printf("+\n");
+            }
             printf("%3i ", i - ci->base);
             printf((i == ci->top ? "> " : "| "));
             /*if (stack[i] == NULL) {

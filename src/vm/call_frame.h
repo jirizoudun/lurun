@@ -16,6 +16,8 @@ namespace VM {
         int npar;
         int nres;
 
+        int stack_max;
+
         CallFrame(CallFrame* prev, Closure* closure, int base, int top, int npar=0, int nres=0);
         ~CallFrame();
     };

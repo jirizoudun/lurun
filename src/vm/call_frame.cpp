@@ -7,6 +7,15 @@ namespace VM {
             prev(prev), closure(closure), base(base), top(top), npar(npar), nres(nres)
     {
         size = closure->proto->getMaxStackSize();
+
+        if (prev == NULL || base + size > prev->stack_max) {
+            stack_max = base + size;
+        } else {
+            stack_max = prev->stack_max;
+        }
+        if (prev != NULL) {
+            printf("STACK_MAX: %i %i\n", stack_max, prev->stack_max);
+        }
     }
 
     CallFrame::~CallFrame() {
