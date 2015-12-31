@@ -80,9 +80,9 @@ namespace Lua {
             return false;
         }
 
-        char line[MAX_FILE_LINE_LENGTH];
+        char line[MAX_LINE_LENGTH];
 
-        if (fgets(line, MAX_FILE_LINE_LENGTH, f) != NULL) {
+        if (fgets(line, MAX_LINE_LENGTH, f) != NULL) {
             res.clear();
             res.append(line);
             res.replace(res.end()-1, res.end(), ""); // Remove new line at the end.

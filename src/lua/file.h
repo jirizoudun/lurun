@@ -8,8 +8,6 @@
 #include <String>
 #include "../common.h"
 
-#define MAX_FILE_LINE_LENGTH 500
-
 namespace Lua {
     class File: public GCObject {
         bool opened;
