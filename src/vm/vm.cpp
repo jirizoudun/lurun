@@ -37,18 +37,8 @@ namespace VM {
 
     void VM::run() {
         execute(topCallFrame);
-exit(1);
-        /*
-        GC::root(stack, topCallFrame->top, topCallFrame);
-        GC::mark();
-        GC::sweep();
-         */
 
-        //GC::root(stack, topCallFrame->top, NULL);
-        //GC::mark();
-        GC::sweep();
-
-        //HeapManager::print();
+        GC::sweep(true);
 
         // delete initial frame
         delete topCallFrame;

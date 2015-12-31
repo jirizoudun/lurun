@@ -23,13 +23,7 @@ namespace Lua {
     Function::~Function() {
         delete func_name;
         delete code;
-
-        for (int i=0; i<constants->count; i++) {
-            if (IS_STRING(constants->get(i))) {
-                delete ((StringObject*)VO_P(constants->get(i)));
-            }
-        }
-        delete constants;
+        delete constants; // constants themselves are deleted by GC
         delete upvaluesdescs;
 
         for (std::vector<Function*>::iterator it = protos->begin(); it != protos->end(); ++it) {

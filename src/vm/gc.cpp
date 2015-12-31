@@ -28,8 +28,8 @@ namespace VM {
         }*/
     }
 
-    void GC::sweep() {
-        HeapManager::purgeHeap();
+    void GC::sweep(bool force) {
+        HeapManager::purgeHeap(force);
 
 #if DEBUG_HEAP
         HeapManager::printStatus();
