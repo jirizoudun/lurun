@@ -57,7 +57,7 @@ namespace Lua {
                 return 1;
 
             case LUA_NAT_TONUMBER:
-                assert(false); // TODO check
+//                assert(false); // TODO check
                 if (npar != 1) { assert(false); }
                 if (nres >= 0) {
                     ValueObject vo;
@@ -75,12 +75,12 @@ namespace Lua {
                             }
                         }
                         else {
-                            vo = ValueObject(LUA_TNIL, NULL);
+                            vo = ValueObject();
                         }
                     } else if (stack[1].type == LUA_TNUMFLT || stack[1].type == LUA_TNUMINT) {
                         vo = stack[1];
                     } else {
-                        vo = ValueObject(LUA_TNIL, NULL);
+                        vo = ValueObject();
                     }
 
                     for (int i = 0; i <= nres; i++) {

@@ -1066,14 +1066,14 @@ while s_in ~= nil do
         print_tree(tree_root)
     elseif c == "f" then
         local key = tonumber(get_string_part(s_in, 1, " "))
-
+        print(s_in, key)
         if key ~= nil then
             local val = find(tree_root, key)
 
             if val ~= nil then
                 print_output("Found " .. val .. " for key " .. key .. "\n")
             else
-                print_output("Value for key " .. key .. " not found\n")
+                print_output("Value for key " .. tostring(key) .. " not found\n")
             end
         else
             print_output("Finding key was not successfull!\nProbably invalid command:\n" .. s_in .. "\n")

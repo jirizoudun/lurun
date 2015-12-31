@@ -22,7 +22,7 @@ namespace VM {
 
         CallFrame* topCallFrame;
 
-        void initEnviroment(Lua::Table *env);
+        void initEnviroment(Lua::Table *env, int argc, char **args);
         void execute(CallFrame*);
 
         ValueObject arithmetic(long long, long long, OpCode);
@@ -37,7 +37,7 @@ namespace VM {
     public:
         VM();
 
-        void init(Lua::Function* initialChunk);
+        void init(Lua::Function* initialChunk, int argc, char **args);
         void run();
         void printStack(CallFrame*) const;
     };

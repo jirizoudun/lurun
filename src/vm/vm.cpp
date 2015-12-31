@@ -1,4 +1,4 @@
-
+#include <sstream>
 #include "../common.h"
 
 namespace VM {
@@ -15,14 +15,14 @@ namespace VM {
     /**
      * Create environment table and other structures needed for VM to run
      */
-    void VM::init(Function *initialChunk) {
+    void VM::init(Function *initialChunk, int argc, char **args) {
 #if DEBUG
         printf("\nINIT\n\n");
 #endif
 
         // create environment
         Table* _ENV = (Table*)ALLOC_TABLE();
-        initEnviroment(_ENV);
+        initEnviroment(_ENV, argc, args);
 
         // create upvalue from environment
         stack[0] = ValueObject(LUA_TTABLE, (void *)_ENV);
@@ -280,9 +280,14 @@ namespace VM {
                     stack[base + RA] = stack[base + RB];
                     break;
                 case OP_CONCAT: { // R(A) := R(B).. ... ..R(C)
-                    string B = stack[base + RB].toString();
-                    string C = stack[base + RC].toString();
-                    stack[base + RA] = ValueObject(LUA_TSTRING, ALLOC_STRING(string(B).append(C)));
+                    stringstream str;
+
+                    for(int i = base + RB; i <= base + RC; i++)
+                    {
+                        str << stack[i].toString();
+                    }
+
+                    stack[base + RA] = ValueObject(LUA_TSTRING, ALLOC_STRING(str.str()));
                     break;
                 }
 
@@ -512,10 +517,19 @@ namespace VM {
         }
     }
 
-    void VM::initEnviroment(Table *env) {
-       BaseEnv::initEnviroment(env);
+    void VM::initEnviroment(Table *env, int argc, char **args) {
+        BaseEnv::initEnviroment(env);
 
-        //TODO other native methods
+        Table *arg = (Table*)ALLOC_TABLE();
+        arg->set(ValueObject(-1), ValueObject(LUA_TSTRING, ALLOC_STRING("lua5.3"))); // TODO Magic constant
+
+        // Parse arguments
+        for(int i = 1; i < argc; i++)
+        {
+            arg->set(ValueObject(i - 1), ValueObject(LUA_TSTRING, ALLOC_STRING(args[i])));
+        }
+
+        env->set("arg", ValueObject(LUA_TTABLE, arg));
 
 #if DEBUG
         printf("_ENV:\n");

@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
 
     bool retval;
 
-    if(argc != ARG_COUNT)
+    if(argc < ARG_COUNT)
     {
         fputs(ERROR_NO_FILE, stderr);
         return -1;
@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
 #endif
 
     VM::VM vm;
-    vm.init(f);
+    vm.init(f, argc, argv);
 
 #if VERBOSE
     printf("..READY TO EXECUTE\n");
