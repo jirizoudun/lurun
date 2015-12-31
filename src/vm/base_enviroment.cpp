@@ -11,8 +11,6 @@ namespace BaseEnv {
         env->set("assert",       ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_ASSERT)));
         env->set("tonumber",     ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_TONUMBER)));
         env->set("tostring",     ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_TOSTRING)));
-        env->set("rawget",       ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_RAWGET)));
-        env->set("rawset",       ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_RAWSET)));
         env->set("next",         ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_NEXT)));
         env->set("pairs",        ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_PAIRS)));
         env->set("getmetatable", ValueObject(LUA_TNATIVE, ALLOC_NATIVE(LUA_NAT_GETMETATABLE)));

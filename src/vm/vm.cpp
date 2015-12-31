@@ -124,7 +124,11 @@ namespace VM {
                 case OP_GETTABUP: { // R(A) := UpValue[B][RK(C)]
                     ValueObject C = getVO(stack + base, proto, RC);
                     Table* t = (Table*)VO_P(ci->closure->upvalues->at(RB)->getValue());
-
+//                    if(ip == 0)
+//                    {
+//                        t->print();
+//                        printf("@@@@@@@ %s @@@@@@", C.toString().c_str());
+//                    }
                     stack[base + RA] = ValueObject(t->get(C));
                     break;
                 }

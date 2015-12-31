@@ -4,7 +4,7 @@
 
 #define VERBOSE 0
 #define DEBUG 0
-#define DEBUG_TABLE_CONTENTS 0
+#define DEBUG_TABLE_CONTENTS 1
 #define DEBUG_STACK 0
 #define DEBUG_HEAP 0
 

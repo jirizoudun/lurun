@@ -211,12 +211,12 @@ namespace Lua {
                     {
                         base_res[0] = ValueObject(); // LUA_TNIL
                     }
-                    return 1;
                 }
                 else {
-
+                    printf("File isn't open!\n");
+                    base_res[0] = ValueObject();
                 }
-                break;
+                return 1;
             }
 
             case LUA_NAT_MATH_CEIL: {

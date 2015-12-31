@@ -963,16 +963,16 @@ function get_input_function(ifile)
         return stdin_f
     end
 
-    local f = io.open(ifile, "r")
+    in_file = io.open(ifile, "r")
 
-    if f == nil then
+    if in_file == nil then
         return stdin_f
     end
 
     return function()
-        local str = f.read(f)
+        local str = in_file.read(in_file)
         return str
-    end, f -- returning opened file, so we can close it when reading is done
+    end, in_file -- returning opened file, so we can close it when reading is done
 end
 
 -- Returns output function which depends on ifile status
@@ -986,17 +986,17 @@ function get_output_function(ofile)
         return stdout_f
     end
 
-    local f = io.open(ofile, "w")
+    out_file = io.open(ofile, "w")
 
-    if f == nil then
+    if out_file == nil then
         return stdout_f
     end
 
     local func = function(str)
-        f.write(f, str)
+        out_file.write(out_file, str)
     end
 
-    return func, f -- returning opened file, so we can close it when writing is done
+    return func, out_file -- returning opened file, so we can close it when writing is done
 end
 
 print("##############################################")
@@ -1028,6 +1028,32 @@ end
 
 -- in_file have to be closed if it's not nil
 get_input, in_file = get_input_function(ifile_str)
+--in_file = nil
+--
+--local stdin_f = function()
+--    local str = io.read()
+--    return str
+--end
+--
+--local filein_f = function()
+--    local str = in_file.read(in_file)
+--    return str
+--end
+--
+--get_input = nil
+--
+--if ifile_str == nil then
+--    get_input =  stdin_f
+--else
+--    in_file = io.open(ifile_str, "r")
+--
+--    if in_file == nil then
+--        get_input = stdin_f
+--    end
+--
+--    get_input = filein_f
+--end
+
 -- iout_file have to be closed if it's not nil
 print_output, out_file = get_output_function(ofile_str)
 
@@ -1066,7 +1092,6 @@ while s_in ~= nil do
         print_tree(tree_root)
     elseif c == "f" then
         local key = tonumber(get_string_part(s_in, 1, " "))
-        print(s_in, key)
         if key ~= nil then
             local val = find(tree_root, key)
 
