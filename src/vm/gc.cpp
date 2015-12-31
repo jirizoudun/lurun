@@ -19,6 +19,7 @@ namespace VM {
 
     void GC::mark() {
         while (!HeapManager::gray.empty()) { // TODO shouldn't do all at once
+            printf(" ########## \n");
             HeapManager::markReferencesGray();
         }
 
@@ -30,6 +31,7 @@ namespace VM {
 
     void GC::sweep() {
         HeapManager::purgeHeap();
+
 #if DEBUG_HEAP
         HeapManager::printStatus();
 #endif

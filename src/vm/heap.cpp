@@ -1,4 +1,5 @@
 
+
 #include "../common.h"
 
 namespace VM {
@@ -45,7 +46,7 @@ namespace VM {
         return NULL;
     }
 
-    void* HeapManager::allocBlock(unsigned char alloc_size, char type) {
+    void* HeapManager::allocBlock(unsigned char alloc_size, char type, bool protect) {
         assert(alloc_size <= 255);
         unsigned char block_size;
         char* ptr = getAddress(alloc_size, block_size);
@@ -54,6 +55,8 @@ namespace VM {
             printf("We ran out of memory\n");
             exit(1);
         }
+
+        printf("ALLOC %i %i\n", (int)(ptr - heap), type);
 
         unsigned char next_free_block_size = 0;
         if (block_size != 0) {
@@ -67,7 +70,7 @@ namespace VM {
         }
 
         write_block_size(ptr, alloc_size);
-        write_block_flags(ptr, type, GC_WHITE, false);
+        write_block_flags(ptr, type, (char)(protect ? GC_PROTECTED : GC_WHITE), false);
 
         if (next_free_block == ptr) {
             next_free_block += FULL_BLOCK_SIZE(alloc_size);
@@ -97,6 +100,7 @@ namespace VM {
             read_block_size(block, block_size);
 
             if (block_size == 0) { // reached the end of used space
+                if (next_free_block == NULL) { next_free_block = block; }
                 if (prev_block != NULL) { write_block_size(prev_block, 0); }
                 break;
             }
@@ -105,6 +109,10 @@ namespace VM {
 
             // free white blocks
             if (!free && color == GC_WHITE) {
+                //printf("before: %i\n", free);
+                if (type == GC_STRING) {((StringObject*)(block+2))->print();}
+                printf("DEALLOC %i\n", (int)(block - heap));
+
                 switch(type) {
                     case GC_TABLE:   ((Table*)       (block + HEAP_HEAD_SIZE))->~Table();        break;
                     case GC_UPVAL:   ((UpvalueRef*)  (block + HEAP_HEAD_SIZE))->~UpvalueRef();   break;
@@ -118,7 +126,7 @@ namespace VM {
             }
 
             if (!free) {
-                write_block_flags(block, type, GC_WHITE, free);
+                write_block_flags(block, type, (char)(color == GC_PROTECTED ? GC_PROTECTED : GC_WHITE), free);
                 prev_block = NULL;
             } else {
                 if (next_free_block == NULL) { next_free_block = block; }
@@ -142,15 +150,22 @@ namespace VM {
         if (gray.find(ptr) == gray.end()) {
             char dummy_type;
             char color;
-            bool dummy_free; // TODO sanity check free?
+            bool free;
 
             char* block_ptr = ptr - HEAP_HEAD_SIZE;
 
             // if not gray check if white
-            read_block_flags(block_ptr, dummy_type, color, dummy_free);
+            read_block_flags(block_ptr, dummy_type, color, free);
 
+            printf("INDEX = %i\n", (ptr - HeapManager::heap - 2));
+            printf("TYPE = %i\n", dummy_type);
+
+            //print();
+
+
+            assert(!free); // sanity check
             if (color == GC_WHITE) {
-                write_block_flags(block_ptr, dummy_type, GC_GRAY, dummy_free);
+                write_block_flags(block_ptr, dummy_type, GC_GRAY, free);
                 gray.insert(ptr);
             }
         }
@@ -178,36 +193,41 @@ namespace VM {
         char color;
         bool free;
         int p = 0;
+
+        printf("Skipping protected\n");
         while(p < HEAP_SIZE - HEAP_HEAD_SIZE) {
             read_block_size(heap+p, block_size);
             read_block_flags(heap+p, type, color, free);
 
-            if (block_size == 0) { // reached free space at the and of the heap
-                double left = (HEAP_SIZE - p)/1024.;
-                printf("%.3f kB (%.3f MB) left\n\n", left, left/1024.);
-                break;
-            }
-
-            switch(color) {
-                case GC_WHITE: printf("W"); break;
-                case GC_BLACK: printf("B"); break;
-                case GC_GRAY:  printf("G"); break;
-                default: break;
-            }
-
-            printf(" Block [%i] @%i: %iB", free, p, block_size);
-            if (!free) {
-                switch(type) {
-                    case GC_TABLE:   printf(", table"); break;
-                    case GC_UPVAL:   printf(", upval"); break;
-                    case GC_CLOSURE: printf(", closure"); break;
-                    case GC_STRING:  printf(", string"); break;
-                    case GC_NATIVE:  printf(", native"); break;
-                    case GC_FILE:    printf(", file"); break;
-                    default: printf("unknown"); break;
+            if (color != GC_PROTECTED) {
+                if (block_size == 0) { // reached free space at the and of the heap
+                    double left = (HEAP_SIZE - p)/1024.;
+                    printf("%.3f kB (%.3f MB) left\n\n", left, left/1024.);
+                    break;
                 }
+
+                switch(color) {
+                    case GC_WHITE: printf("W"); break;
+                    case GC_BLACK: printf("B"); break;
+                    case GC_GRAY:  printf("G"); break;
+                    case GC_PROTECTED:  printf("*"); break;
+                    default: break;
+                }
+
+                printf(" Block [%i] @%i: %iB", free, p, block_size);
+                if (!free) {
+                    switch(type) {
+                        case GC_TABLE:   printf(", table"); break;
+                        case GC_UPVAL:   printf(", upval"); break;
+                        case GC_CLOSURE: printf(", closure"); break;
+                        case GC_STRING:  printf(", string"); break;
+                        case GC_NATIVE:  printf(", native"); break;
+                        case GC_FILE:    printf(", file"); break;
+                        default: printf("unknown"); break;
+                    }
+                }
+                printf("\n");
             }
-            printf("\n");
 
             p += HEAP_HEAD_SIZE + block_size;
         }

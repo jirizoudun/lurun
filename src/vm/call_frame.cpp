@@ -13,9 +13,6 @@ namespace VM {
         } else {
             stack_max = prev->stack_max;
         }
-        if (prev != NULL) {
-            printf("STACK_MAX: %i %i\n", stack_max, prev->stack_max);
-        }
     }
 
     CallFrame::~CallFrame() {

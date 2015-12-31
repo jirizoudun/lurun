@@ -35,7 +35,7 @@ Function* Reader::readFile() {
 
 Function* Reader::readFunction() {
 
-    StringObject *          name        = readString(); // source name?
+    StringObject *          name        = readString(false); // source name?
     int                     line_first  = readInt(); // line defined
     int                     line_last   = readInt(); // lastlinedefined
     byte                    num_params  = readByte(); // numparams
@@ -72,7 +72,7 @@ long long Reader::readInteger() {
     return number;
 }
 
-StringObject * Reader::readString() {
+StringObject * Reader::readString(bool allocateOnHeap) {
     byte size = readByte();
     if (size == 0) {
         return NULL;
@@ -94,7 +94,12 @@ StringObject * Reader::readString() {
         }
         str[len-1] = '\0';
 
-        StringObject* so = new StringObject(str);
+        StringObject* so;
+        if (allocateOnHeap) {
+            so = (StringObject*)ALLOC_PROTECTED_STRING(str);
+        } else {
+            so = new StringObject(str);
+        }
         delete [] str;
         return so;
     }
@@ -133,7 +138,7 @@ Container<ValueObject>* Reader::readConstants() {
             case LUA_TSHRSTR:
             case LUA_TLNGSTR:
                 values[i].type = LUA_TSTRING;
-                values[i].value.p = (void*)readString();
+                values[i].value.p = (void*)readString(true);
                 break;
             default:
                 exit(1); // TODO error
@@ -172,13 +177,13 @@ void Reader::readDebug() {
 
     cnt = readInt();
     for (int i=0; i<cnt; i++) {
-        delete readString();
+        delete readString(false);
         readInt();
         readInt();
     }
 
     cnt = readInt();
     for (int i=0; i<cnt; i++) {
-        delete readString();
+        delete readString(false);
     }
 }

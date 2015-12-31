@@ -28,7 +28,7 @@ using namespace Lua;
         static std::set<char*> gray;
 
         /** Set flags for allocation and return address of block contents */
-        static void* allocBlock(unsigned char size, char type);
+        static void* allocBlock(unsigned char size, char type, bool protect);
         static void purgeHeap();
 
         static void markGray(char* ptr);

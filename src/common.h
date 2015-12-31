@@ -2,10 +2,10 @@
 #ifndef LURUN_COMMON_H
 #define LURUN_COMMON_H
 
-#define VERBOSE 0
-#define DEBUG 0
+#define VERBOSE 1
+#define DEBUG 1
 #define DEBUG_TABLE_CONTENTS 0
-#define DEBUG_STACK 0
+#define DEBUG_STACK 1
 #define DEBUG_HEAP 0
 
 #define MAX_FILENAME_LENGTH 128

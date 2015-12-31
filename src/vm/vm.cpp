@@ -37,7 +37,7 @@ namespace VM {
 
     void VM::run() {
         execute(topCallFrame);
-
+exit(1);
         /*
         GC::root(stack, topCallFrame->top, topCallFrame);
         GC::mark();
@@ -77,7 +77,7 @@ namespace VM {
 
 #if DEBUG
             printf("### ");
-            printf("%i: ", ip);
+            printf("%i %i: ", gc++, ip);
             inst->print(); // ; debug
 #endif
 
@@ -280,6 +280,10 @@ namespace VM {
                         stack[R++] = stack[base + i];
                     }
 
+                    while (R < ci->top) {
+                        stack[R++].type = LUA_TNIL;
+                    }
+
                     ci->top = R - 1;
                     return;
                 }
@@ -440,13 +444,16 @@ namespace VM {
             }
 
 
-            /*
-            if (inst->getOpCode() == OP_JMP) {
-                HeapManager::print();
-            }*/
+
+            if (gc >= 4170) {
+              //  printStack(ci);
+//                HeapManager::print();
+            }
 
             GC::root(stack, ci);
             GC::mark();
+
+            HeapManager::print();
 
             //HeapManager::printStatus();
 
