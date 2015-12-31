@@ -27,13 +27,13 @@ private:
     double              readNumber();
     long long           readInteger();
 
-    Lua::StringObject *        readString();
+    Lua::StringObject *   readString(bool allocateOnHeap);
     Lua::InstructionList* readCode();
 
     Lua::Function*      readFunction();
 
     Lua::Container<Lua::ValueObject>* readConstants();
-    Lua::Container<Lua::UpvalueDesc>*     readUpvalues();
+    Lua::Container<Lua::UpvalueDesc>* readUpvalues();
     std::vector<Lua::Function*>*      readProtos();
     void readDebug();
 };

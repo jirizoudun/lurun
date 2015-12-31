@@ -41,6 +41,7 @@ namespace Lua {
         if(voPointer == NULL) {return;}
 
         value = *voPointer;
+        value.gc();
         voPointer = NULL;
 
         if (prev != NULL) {prev->next = next;}
@@ -48,7 +49,11 @@ namespace Lua {
     }
 
     void UpvalueRef::gc() const {
-        if (voPointer != NULL) { voPointer->gc(); }
+        if (voPointer != NULL) {
+            voPointer->gc();
+        } else {
+            value.gc();
+        }
         if (next != NULL) { VM::HeapManager::markGray((char*)next); }
         if (prev != NULL) { VM::HeapManager::markGray((char*)prev); }
     }

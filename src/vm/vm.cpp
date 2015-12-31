@@ -38,17 +38,10 @@ namespace VM {
     void VM::run() {
         execute(topCallFrame);
 
-        /*
-        GC::root(stack, topCallFrame->top, topCallFrame);
-        GC::mark();
-        GC::sweep();
-         */
-
-        //GC::root(stack, topCallFrame->top, NULL);
-        //GC::mark();
-        GC::sweep();
-
-        //HeapManager::print();
+        GC::sweep(true);
+#if DEBUG_HEAP_STATUS
+        HeapManager::printStatus();
+#endif
 
         // delete initial frame
         delete topCallFrame;
@@ -68,6 +61,8 @@ namespace VM {
         //
 
         for(int ip=0; ip < code->getCount(); ip++) {
+            ++gc;
+
             Instruction* inst = code->getInstruction(ip);
             int* args = inst->getArgs();
 
@@ -77,7 +72,7 @@ namespace VM {
 
 #if DEBUG
             printf("### ");
-            printf("%i: ", ip);
+            printf("%i %i: ", gc, ip);
             inst->print(); // ; debug
 #endif
 
@@ -283,8 +278,12 @@ namespace VM {
                     for (int i = RA; i <= RA + RB - 2; i++) {
                         stack[R++] = stack[base + i];
                     }
-
                     ci->top = R - 1;
+
+                    // clean after yourself
+                    while (R < base + ci->size) {
+                        stack[R++].type = LUA_TNIL;
+                    }
                     return;
                 }
                 case OP_MOVE: // RA = RB
@@ -448,6 +447,16 @@ namespace VM {
                     break;
             }
 
+            // Collect Garbage
+            if (gc % GC_CYCLES == 0) {
+                GC::root(stack, ci);
+                GC::mark(); // sweep is called automatically by mark
+
+#if DEBUG_HEAP_STATUS
+                HeapManager::printStatus();
+#endif
+            }
+
 #if DEBUG_STACK
             printStack(ci); // ; debug
 #endif
@@ -550,7 +559,10 @@ namespace VM {
 
     void VM::printStack(CallFrame * ci) const {
         printf("\n---- STACK -----------------\n");
-        for (int i=0;i < ci->base + ci->size;i++) {
+        for (int i=0;i < ci->stack_max;i++) {
+            if (i == ci->base + ci->size) {
+                printf("+\n");
+            }
             printf("%3i ", i - ci->base);
             printf((i == ci->top ? "> " : "| "));
             /*if (stack[i] == NULL) {

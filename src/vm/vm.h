@@ -13,6 +13,8 @@ namespace VM {
 
     class VM {
 
+        int gc = 0;
+
         Lua::ValueObject stack[VM_STACK_SIZE];
 
         Lua::UpvalueRef * lastUpval;
