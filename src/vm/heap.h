@@ -29,7 +29,7 @@ using namespace Lua;
 
         /** Set flags for allocation and return address of block contents */
         static void* allocBlock(unsigned char size, char type, bool protect);
-        static void purgeHeap();
+        static void purgeHeap(bool force);
 
         static void markGray(char* ptr);
         static void markReferencesGray();

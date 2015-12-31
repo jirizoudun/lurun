@@ -113,7 +113,6 @@ namespace Lua {
 
     void File::gc() const {
         if (metatable != NULL) {
-//            printf("metatable file\n");
             VM::HeapManager::markGray((char*)metatable);
         }
     }

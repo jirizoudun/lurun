@@ -37,18 +37,11 @@ namespace VM {
 
     void VM::run() {
         execute(topCallFrame);
-exit(1);
-        /*
-        GC::root(stack, topCallFrame->top, topCallFrame);
-        GC::mark();
-        GC::sweep();
-         */
 
-        //GC::root(stack, topCallFrame->top, NULL);
-        //GC::mark();
-        GC::sweep();
-
-        //HeapManager::print();
+        GC::sweep(true);
+#if DEBUG_HEAP_STATUS
+        HeapManager::printStatus();
+#endif
 
         // delete initial frame
         delete topCallFrame;
@@ -68,6 +61,8 @@ exit(1);
         //
 
         for(int ip=0; ip < code->getCount(); ip++) {
+            ++gc;
+
             Instruction* inst = code->getInstruction(ip);
             int* args = inst->getArgs();
 
@@ -77,7 +72,7 @@ exit(1);
 
 #if DEBUG
             printf("### ");
-            printf("%i %i: ", gc++, ip);
+            printf("%i %i: ", gc, ip);
             inst->print(); // ; debug
 #endif
 
@@ -452,13 +447,15 @@ exit(1);
                     break;
             }
 
+            // Collect Garbage
+            if (gc % GC_CYCLES == 0) {
+                GC::root(stack, ci);
+                GC::mark(); // sweep is called automatically by mark
 
-            GC::root(stack, ci);
-            GC::mark();
-            if (HeapManager::gray.empty()) {
-                GC::sweep();
+#if DEBUG_HEAP_STATUS
+                HeapManager::printStatus();
+#endif
             }
-            //GC::sweep();
 
 #if DEBUG_STACK
             printStack(ci); // ; debug

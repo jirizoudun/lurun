@@ -11,7 +11,7 @@ namespace VM {
         /** Creates root set from stack */
         static void root(ValueObject* stack, CallFrame* frame);
         static void mark();
-        static void sweep();
+        static void sweep(bool force=false);
     };
 }
 
