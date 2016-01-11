@@ -164,7 +164,7 @@ namespace VM {
                 case OP_JMP: { // pc+=sBx; if (A) close all upvalues >= R(A - 1)
 
                     if (RA != 0) {
-                        assert(false); // TODO
+                        closeUpvals(ci, RA);
                     }
 
                     ip += RB;
@@ -256,22 +256,7 @@ namespace VM {
                     }
 
                     // close upvalues
-                    for(int R = base; R < base+ci->size; R++) { // TODO ci->size or ci->top?
-                        if (!IS_CLOSURE(stack[R])) {continue;} // stack[R] == NULL ||
-
-                        Closure * clClosure = (Closure*)sgetptr(R);
-                        Function* clProto = clClosure->proto;
-                        for(int i = 0; i < clProto->upvaluesdescs->count; i++) {
-
-                            if (clProto->upvaluesdescs->get(i).instack) {
-                                UpvalueRef * toClose = clClosure->upvalues->at(i);
-                                if (toClose == lastUpval) {
-                                    lastUpval = toClose->next;
-                                }
-                                toClose->close();
-                            }
-                        }
-                    }
+                    closeUpvals(ci, base);
 
                     // move from my registers to parent registers
                     int R = base - 1;
@@ -498,6 +483,25 @@ namespace VM {
             topCallFrame = ci;
         }
         return true;
+    }
+
+    void VM::closeUpvals(CallFrame* ci, int Rst) {
+        for(int R = Rst-1; R < ci->base+ci->size; R++) {  // TODO ci->size or ci->top?
+            if (!IS_CLOSURE(stack[R])) {continue;} // stack[R] == NULL ||
+
+            Closure * clClosure = (Closure*)sgetptr(R);
+            Function* clProto = clClosure->proto;
+            for(int i = 0; i < clProto->upvaluesdescs->count; i++) {
+
+                if (clProto->upvaluesdescs->get(i).instack) {
+                    UpvalueRef * toClose = clClosure->upvalues->at(i);
+                    if (toClose == lastUpval) {
+                        lastUpval = toClose->next;
+                    }
+                    toClose->close();
+                }
+            }
+        }
     }
 
     ValueObject VM::arithmetic(long long a, long long b, OpCode op) {

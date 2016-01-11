@@ -33,6 +33,7 @@ namespace VM {
         ValueObject getVO(ValueObject* stack, Function * proto, int R) const;
 
         bool callM(CallFrame* ci, ValueObject B, ValueObject C, int RA, const char*);
+        void closeUpvals(CallFrame* ci, int Rst);
     public:
         VM();
 
