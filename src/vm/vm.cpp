@@ -164,7 +164,7 @@ namespace VM {
                 case OP_JMP: { // pc+=sBx; if (A) close all upvalues >= R(A - 1)
 
                     if (RA != 0) {
-                        closeUpvals(ci, RA);
+                        closeUpvals(ci, RA-1);
                     }
 
                     ip += RB;
@@ -486,7 +486,7 @@ namespace VM {
     }
 
     void VM::closeUpvals(CallFrame* ci, int Rst) {
-        for(int R = Rst-1; R < ci->base+ci->size; R++) {  // TODO ci->size or ci->top?
+        for(int R = Rst; R < ci->base+ci->size; R++) {  // TODO ci->size or ci->top?
             if (!IS_CLOSURE(stack[R])) {continue;} // stack[R] == NULL ||
 
             Closure * clClosure = (Closure*)sgetptr(R);
